@@ -31,7 +31,7 @@ export async function proxy(request: NextRequest) {
 
   // Niezalogowany
   if (!user) {
-    if (isPublicPath || isHomePage) return supabaseResponse
+    if (isPublicPath) return supabaseResponse
     return NextResponse.redirect(new URL("/login", request.url))
   }
 
