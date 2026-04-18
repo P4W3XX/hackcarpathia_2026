@@ -15,6 +15,7 @@ import {
   LogOut,
   Calculator,
   Newspaper,
+  Stethoscope,
 } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { cn } from "@/lib/utils";
@@ -36,7 +37,9 @@ interface MenuProps {
       | "jobs"
       | "career"
       | "salary-calculator"
-      | "home",
+      | "home"
+      | "taxes"
+      | "doctors"
   ) => void;
   isExpanded: boolean;
   onToggleMenu: () => void;
@@ -88,6 +91,21 @@ export const Menu: React.FC<MenuProps> = ({
       description: "Stwórz swoje CV",
       page: "cv-creator" as const,
     },
+         {
+            id: "doctors",
+            label: "Wizyty u lekarza",
+            icon: Stethoscope,
+            description: "Planuj wizyty i monitoruj zdrowie",
+            page: "doctors" as const,
+        },
+                {
+            id: "taxes",
+            label: "Podatki i terminy",
+            icon: Receipt,
+            description: "Instrukcje odprowadzania podatków",
+            page: "taxes" as const,
+        },
+
   ];
 
   const handleMenuItemClick = (item: (typeof menuItems)[0]) => {
