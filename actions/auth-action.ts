@@ -32,6 +32,7 @@ export async function registerAction(data: z.infer<typeof registerSchema>) {
     email: authData.user.email!,
     name: data.name,
     salary: 0,
+    city_name: "",
   })
 
   await supabase.from("profiles").upsert({
@@ -63,6 +64,7 @@ export async function loginAction(data: z.infer<typeof loginSchema>) {
       email: authData.user.email!,
       name: authData.user.user_metadata.full_name,
       salary: Number(authData.user.user_metadata.salary ?? 0),
+      city_name: "",
     })
   }
   redirect("/")

@@ -5,6 +5,48 @@ import { Briefcase, Menu as MenuIcon, X, TrendingUp, CheckCircle, Calculator, Re
 
 interface MenuProps {
   onNavigate?: (page: "jobs" | "career" | "home" | "salary-calculator" | "taxes" | "doctors") => void;
+import {
+  Briefcase,
+  Menu as MenuIcon,
+  X,
+  TrendingUp,
+  CheckCircle,
+  ChevronUp,
+  Sparkles,
+  Settings,
+  ShoppingBag,
+  Receipt,
+  LogOut,
+  Calculator,
+  Newspaper,
+  Stethoscope,
+} from "lucide-react";
+import { useRouter } from "next/navigation";
+import { cn } from "@/lib/utils";
+import { Button } from "@/components/ui/button";
+import { logoutAction } from "@/actions/auth-action";
+import { useUserStore } from "@/store/user";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuGroup,
+  DropdownMenuItem,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
+
+interface MenuProps {
+  onNavigate?: (
+    page:
+      | "contract-analyzer"
+      | "cv-creator"
+      | "jobs"
+      | "career"
+      | "salary-calculator"
+      | "home"
+      | "taxes"
+      | "doctors"
+  ) => void;
   isExpanded: boolean;
   onToggleMenu: () => void;
 }
@@ -16,7 +58,7 @@ export const Menu: React.FC<MenuProps> = ({
 }) => {
   const [activeItem, setActiveItem] = useState<string>("salary-calculator");
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
-  const user = { name: "John Doe" };
+  const user = useUserStore((state) => state.user);
   const router = useRouter();
 
     const menuItems = [
@@ -63,6 +105,15 @@ export const Menu: React.FC<MenuProps> = ({
             page: "home" as const,
         },
     ];
+                {
+            id: "taxes",
+            label: "Podatki i terminy",
+            icon: Receipt,
+            description: "Instrukcje odprowadzania podatków",
+            page: "taxes" as const,
+        },
+
+  ];
 
   const handleMenuItemClick = (item: (typeof menuItems)[0]) => {
     if (onNavigate) {
@@ -188,15 +239,6 @@ export const Menu: React.FC<MenuProps> = ({
             className="w-64"
           >
             <DropdownMenuGroup>
-              <DropdownMenuItem onClick={() => router.push("/exchange")}>
-                <ShoppingBag className="size-4" />
-                Wymień punkty eko
-              </DropdownMenuItem>
-              <DropdownMenuItem onClick={() => router.push("/bills")}>
-                <Receipt className="size-4" />
-                Twoje rachunki
-              </DropdownMenuItem>
-              <DropdownMenuSeparator />
               <DropdownMenuItem onClick={() => router.push("/settings")}>
                 <Settings className="size-4" />
                 Ustawienia
@@ -204,7 +246,7 @@ export const Menu: React.FC<MenuProps> = ({
             </DropdownMenuGroup>
             <DropdownMenuSeparator />
             <DropdownMenuGroup>
-              <DropdownMenuItem variant="destructive">
+              <DropdownMenuItem onClick={() => logoutAction()} variant="destructive">
                 <LogOut className="size-4" />
                 Wyloguj
               </DropdownMenuItem>
