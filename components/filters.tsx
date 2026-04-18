@@ -193,9 +193,17 @@ export const Filters: React.FC = () => {
 
           {expandedSections.salary && (
             <div className="px-5 pb-5 space-y-4 bg-gray-50">
+              {/* Salary Chart Header */}
+              <div className="flex items-center justify-between text-sm">
+                <span className="font-semibold text-gray-900">Distribution</span>
+                <span className="text-green-600 font-bold">
+                  {jobOffers.filter((job) => job.salary.min >= salaryRange[0] && job.salary.min <= salaryRange[1]).length} jobs
+                </span>
+              </div>
+
               {/* Salary Chart */}
-              <div className="p-3 bg-white border border-blue-200 rounded-xl">
-                <div className="flex items-end justify-between h-32 gap-1">
+              <div className="p-4 bg-white border border-green-200 rounded-xl shadow-sm">
+                <div className="flex items-end justify-between h-40 gap-1.5">
                   {salaryDistribution.map((item, index) => {
                     const isInRange =
                       item.salary >= salaryRange[0] &&
@@ -208,23 +216,26 @@ export const Filters: React.FC = () => {
                         className="flex-1 flex flex-col items-center group relative"
                       >
                         <div
-                          className={`w-full rounded-t transition-all duration-200 ${
+                          className={`w-full rounded-t-lg transition-all duration-200 shadow-sm ${
                             isInRange
-                              ? "bg-gradient-to-t from-green-500 to-green-400 hover:from-green-600 hover:to-green-500"
-                              : "bg-gray-200 hover:bg-gray-300"
+                              ? "bg-gradient-to-t from-emerald-500 via-emerald-400 to-emerald-300 hover:from-emerald-600 hover:via-emerald-500 hover:to-emerald-400 shadow-md"
+                              : "bg-gradient-to-t from-gray-300 to-gray-200 hover:from-gray-400 hover:to-gray-300"
                           }`}
                           style={{ height: `${heightPercent}%` }}
                         />
-                        <div className="absolute bottom-full mb-1 px-2 py-1 bg-gray-800 text-white text-xs rounded opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap pointer-events-none">
-                          ${item.salary.toLocaleString()}
+                        {/* Tooltip */}
+                        <div className="absolute -top-12 left-1/2 -translate-x-1/2 px-3 py-2 bg-gray-900 text-white text-xs rounded-lg opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap pointer-events-none z-20 shadow-lg">
+                          <div className="font-semibold">${item.salary.toLocaleString()}</div>
+                          <div className="text-gray-300">{item.count} job{item.count !== 1 ? 's' : ''}</div>
                         </div>
                       </div>
                     );
                   })}
                 </div>
-                <div className="flex justify-between text-xs text-gray-500 mt-2 px-1">
-                  <span>$2K</span>
-                  <span>$14K</span>
+                <div className="flex justify-between text-xs text-gray-500 mt-3 px-1">
+                  <span className="font-medium">$2K</span>
+                  <span className="font-medium">$8K</span>
+                  <span className="font-medium">$14K</span>
                 </div>
               </div>
 
