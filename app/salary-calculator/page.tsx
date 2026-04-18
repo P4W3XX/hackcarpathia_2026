@@ -193,53 +193,8 @@ export default function JobFinderSalaryDashboard() {
   if (!isMounted || !calculation) return null;
 
   return (
-    <div className="min-h-screen bg-[#F8F9FD] text-slate-800 font-sans flex w-full">
-      <aside className="w-72 bg-white border-r border-slate-200 p-8 flex flex-col gap-8 hidden lg:flex">
-        <div className="flex items-center gap-2 text-indigo-600 font-bold text-xl mb-4">
-          <Briefcase size={28} />
-          <span>PayCheck.io</span>
-        </div>
-
-        <nav className="space-y-6">
-          <FilterSelect
-            label="Lokalizacja"
-            icon={<MapPin size={14} />}
-            value={city}
-            onChange={(val: React.SetStateAction<string>) => {
-              setCity(val);
-              updateProfile({ city_name: val });
-            }}
-            options={cityData.map((c) => c.city_name)}
-          />
-          <FilterSelect
-            label="Rodzaj lokum"
-            icon={<Home size={14} />}
-            value={housing}
-            onChange={(val: React.SetStateAction<string>) => {
-              setHousing(val);
-              updateProfile({ housing_type: val });
-            }}
-            options={["rentRoom", "rentStudio", "rentApartment"]}
-            labels={{
-              rentRoom: "Pokój",
-              rentStudio: "Kawalerka",
-              rentApartment: "Apartament",
-            }}
-          />
-          <FilterSelect
-            label="Styl życia"
-            icon={<Coffee size={14} />}
-            value={lifestyle}
-            onChange={(val: React.SetStateAction<string>) => {
-              setLifestyle(val);
-              updateProfile({ lifestyle_type: val });
-            }}
-            options={Object.keys(LIFESTYLES)}
-          />
-        </nav>
-      </aside>
-
-      <main className="flex-1 p-8 overflow-y-auto">
+    <div className="min-h-screen bg-[#F8F9FD] text-slate-800 font-sans w-full">
+      <main className="max-w-7xl mx-auto p-8 overflow-y-auto">
         <header className="flex justify-between items-center mb-8">
           <div>
             <h1 className="text-2xl font-bold tracking-tight">
@@ -248,6 +203,46 @@ export default function JobFinderSalaryDashboard() {
             <p className="text-slate-500 text-sm">Twoja analiza finansowa,</p>
           </div>
         </header>
+
+        <div className="bg-white border border-slate-200 rounded-[24px] p-6 mb-8 flex flex-col lg:flex-row items-center gap-8">
+          <nav className="flex flex-col lg:flex-row gap-6 w-full items-center lg:items-end">
+            <FilterSelect
+              label="Lokalizacja"
+              icon={<MapPin size={14} />}
+              value={city}
+              onChange={(val: React.SetStateAction<string>) => {
+                setCity(val);
+                updateProfile({ city_name: val });
+              }}
+              options={cityData.map((c) => c.city_name)}
+            />
+            <FilterSelect
+              label="Rodzaj lokum"
+              icon={<Home size={14} />}
+              value={housing}
+              onChange={(val: React.SetStateAction<string>) => {
+                setHousing(val);
+                updateProfile({ housing_type: val });
+              }}
+              options={["rentRoom", "rentStudio", "rentApartment"]}
+              labels={{
+                rentRoom: "Pokój",
+                rentStudio: "Kawalerka",
+                rentApartment: "Apartament",
+              }}
+            />
+            <FilterSelect
+              label="Styl życia"
+              icon={<Coffee size={14} />}
+              value={lifestyle}
+              onChange={(val: React.SetStateAction<string>) => {
+                setLifestyle(val);
+                updateProfile({ lifestyle_type: val });
+              }}
+              options={Object.keys(LIFESTYLES)}
+            />
+          </nav>
+        </div>
 
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-8">
           <div className="lg:col-span-2 bg-white p-6 rounded-[24px] shadow-sm border border-slate-100">
