@@ -58,7 +58,7 @@ export const Menu: React.FC<MenuProps> = ({ onNavigate, isExpanded, onToggleMenu
             <div className="flex items-center justify-between p-6 border-b border-slate-700">
                 {isExpanded && (
                     <h1 className="text-2xl font-bold bg-gradient-to-r from-blue-400 to-cyan-400 bg-clip-text text-transparent">
-                        JobFinder
+                        SmartStart+
                     </h1>
                 )}
                 <button

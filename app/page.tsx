@@ -8,6 +8,7 @@ import { careerLevels } from "./data/jobs";
 import { careerPaths } from "./data/careers";
 import { UserProgress, CareerPath } from "./types";
 import JobFinderSalaryDashboard from "./salary-calculator/page";
+import { CareerAiPath } from "@/components/career-path";
 
 // Static user progress data
 const userProgress: UserProgress = {
@@ -170,7 +171,7 @@ export default function Home() {
         {currentPage === "jobs" && <JobsPage />}
 
         {currentPage === "career" && (
-          <div className="animate-in fade-in duration-500">
+          <div className="animate-in fade-in duration-500 mt-8">
             <div className="text-center mb-12">
               <h1 className="text-4xl font-black text-slate-900 mb-4">
                 Twoja Ścieżka Awansu
