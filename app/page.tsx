@@ -21,6 +21,7 @@ import {
 import { ContractAnalyzer } from "@/components/contract-analyzer";
 import { CvCreator } from "@/components/cv-creator";
 import { DoctorsAppointments } from "@/components/doctors-appointments";
+import { InterviewSimulator } from "@/components/interview-simulator";
 
 // Static user progress data
 const userProgress: UserProgress = {
@@ -71,6 +72,7 @@ export default function Home() {
     | "doctors"
     | "contract-analyzer"
     | "cv-creator"
+    | "interview"
   >("salary-calculator");
 
   const [isMenuExpanded, setIsMenuExpanded] = useState(true);
@@ -890,6 +892,20 @@ export default function Home() {
       )}
 
       <div>{currentPage === "doctors" && <DoctorsAppointments />}</div>
+
+      {currentPage === "interview" && (
+        <div className="p-8 animate-in fade-in duration-500 w-full max-w-none">
+          <div className="text-center mb-8">
+            <h1 className="text-4xl font-black text-slate-900 mb-2">
+              Zdobądź swoją pierwszą pracę
+            </h1>
+            <p className="text-slate-400">
+              Spróbuj odpowiedzieć tak, żeby otrzymać posadę.
+            </p>
+          </div>
+          <div className="w-full max-w-none"><InterviewSimulator /></div>
+        </div>
+      )}
     </main>
   );
 }

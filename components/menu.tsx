@@ -12,7 +12,8 @@ interface MenuProps {
       | "salary-calculator"
       | "home"
       | "taxes"
-      | "doctors",
+      | "doctors"
+      | "interview",
   ) => void;
   isExpanded: boolean;
   onToggleMenu: () => void;
@@ -32,6 +33,7 @@ import {
   Calculator,
   Newspaper,
   Stethoscope,
+  ClipboardClock,
 } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { cn } from "@/lib/utils";
@@ -107,6 +109,13 @@ export const Menu: React.FC<MenuProps> = ({
       description: "Stwóż swoje pierwsze CV",
       page: "cv-creator" as const,
     },
+    {
+      id: "interview",
+      label: "Symulator rozmowy o pracę",
+      icon: ClipboardClock,
+      description: "Przeprowadź testową rozmowę o pracę",
+      page: "interview" as const,
+    }
   ];
 
   const handleMenuItemClick = (item: (typeof menuItems)[0]) => {
