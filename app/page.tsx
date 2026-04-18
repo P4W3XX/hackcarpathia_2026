@@ -6,6 +6,7 @@ import { useEffect, useState } from "react";
 import { Button } from "@/components/ui/button";
 import { createClient } from "@/lib/supabase/client";
 
+
 export default function Home() {
   const { user, setUser } = useUserStore();
   const [isMounted, setIsMounted] = useState(false);
