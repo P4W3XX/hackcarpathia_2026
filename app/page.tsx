@@ -1,8 +1,8 @@
 "use client";
 import React, { useState } from "react";
-import { Menu } from "./components/menu";
-import { JobsPage } from "./components/jobs-page";
-import { CareerProgress } from "./components/career-progress";
+import { Menu } from "@/components/menu";
+import { JobsPage } from "@/components/jobs-page";
+import { CareerProgress } from "@/components/career-progress";
 import { careerLevels } from "./data/jobs";
 import { careerPaths } from "./data/careers";
 import { UserProgress, CareerPath } from "./types";

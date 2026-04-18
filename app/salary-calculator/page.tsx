@@ -16,6 +16,7 @@ import {
 import { useUserStore } from "@/store/user";
 import { createClient } from "@/lib/supabase/client";
 
+const TAX_FACTOR = 0.79;
 const LIFESTYLES: Record<string, number> = {
   "Student (Przetrwanie)": 0.6,
   "Normalny człowiek": 1.0,
@@ -28,7 +29,10 @@ export default function JobFinderSalaryDashboard() {
 
   const [isMounted, setIsMounted] = useState(false);
   const [cityData, setCityData] = useState<any[]>([]);
-  const [netSalary, setNetSalary] = useState(0);
+
+  const [salaryInput, setSalaryInput] = useState<number>(0);
+  const [salaryType, setSalaryType] = useState<"brutto" | "netto">("netto");
+
   const [city, setCity] = useState("Warszawa");
   const [housing, setHousing] = useState("rentStudio");
   const [lifestyle, setLifestyle] = useState("Normalny człowiek");
@@ -39,6 +43,11 @@ export default function JobFinderSalaryDashboard() {
   const [newGoalTitle, setNewGoalTitle] = useState("");
   const [newGoalPrice, setNewGoalPrice] = useState("");
   const [isAdding, setIsAdding] = useState(false);
+
+  const [personalExpenses, setPersonalExpenses] = useState<any[]>([]);
+  const [newExpenseTitle, setNewExpenseTitle] = useState("");
+  const [newExpenseAmount, setNewExpenseAmount] = useState("");
+  const [isAddingExpense, setIsAddingExpense] = useState(false);
 
   useEffect(() => {
     // eslint-disable-next-line react-hooks/set-state-in-effect
@@ -68,10 +77,20 @@ export default function JobFinderSalaryDashboard() {
           name: profile.full_name,
           salary: profile.salary,
         });
-        setNetSalary(profile.salary || 0);
+
+        const initialSalary = profile.salary || 0;
+        setSalaryInput(initialSalary);
+        setSalaryType("brutto");
+
         setCity(profile.city_name || "Warszawa");
         setHousing(profile.housing_type || "rentStudio");
         setLifestyle(profile.lifestyle_type || "Normalny człowiek");
+
+        const { data: userExpenses } = await supabase
+          .from("personal_expenses")
+          .select("*")
+          .order("created_at", { ascending: false });
+        if (userExpenses) setPersonalExpenses(userExpenses);
       }
 
       const { data: userGoals } = await supabase
@@ -86,6 +105,19 @@ export default function JobFinderSalaryDashboard() {
 
     if (isMounted) initData();
   }, [isMounted, supabase, setUser]);
+
+  const syncSalaryToDb = async (value: number, type: "brutto" | "netto") => {
+    if (!user) return;
+    const grossValue =
+      type === "brutto" ? value : Math.round(value / TAX_FACTOR);
+
+    const { error } = await supabase
+      .from("profiles")
+      .update({ salary: grossValue })
+      .eq("id", user.id);
+
+    if (error) console.error("DB Error:", error.message);
+  };
 
   const updateProfile = async (updates: any) => {
     if (!user) return;
@@ -106,7 +138,6 @@ export default function JobFinderSalaryDashboard() {
       ])
       .select()
       .single();
-
     if (!error) {
       setGoals([data, ...goals]);
       setSelectedGoalId(data.id);
@@ -120,11 +151,42 @@ export default function JobFinderSalaryDashboard() {
     e.stopPropagation();
     const { error } = await supabase.from("goals").delete().eq("id", goalId);
     if (!error) {
-      setGoals(goals.filter((g) => g.id !== goalId));
-      if (selectedGoalId === goalId) {
-        setSelectedGoalId(goals.find((g) => g.id !== goalId)?.id || "");
-      }
+      const updated = goals.filter((g) => g.id !== goalId);
+      setGoals(updated);
+      if (selectedGoalId === goalId) setSelectedGoalId(updated[0]?.id || "");
     }
+  };
+
+  const addExpense = async () => {
+    if (!newExpenseTitle || !newExpenseAmount || !user) return;
+    setIsAddingExpense(true);
+    const { data, error } = await supabase
+      .from("personal_expenses")
+      .insert([
+        {
+          title: newExpenseTitle,
+          amount: Number(newExpenseAmount),
+          user_id: user.id,
+        },
+      ])
+      .select()
+      .single();
+
+    if (!error) {
+      setPersonalExpenses([data, ...personalExpenses]);
+      setNewExpenseTitle("");
+      setNewExpenseAmount("");
+    }
+    setIsAddingExpense(false);
+  };
+
+  const deleteExpense = async (id: string) => {
+    const { error } = await supabase
+      .from("personal_expenses")
+      .delete()
+      .eq("id", id);
+    if (!error)
+      setPersonalExpenses(personalExpenses.filter((e) => e.id !== id));
   };
 
   const calculation = useMemo(() => {
@@ -132,12 +194,21 @@ export default function JobFinderSalaryDashboard() {
       cityData.find((c) => c.city_name === city) || cityData[0];
     if (!currentCity) return null;
 
+    const currentNetto =
+      salaryType === "netto" ? salaryInput : salaryInput * TAX_FACTOR;
+    const currentBrutto =
+      salaryType === "brutto" ? salaryInput : salaryInput / TAX_FACTOR;
+
     const rent = Number(currentCity[housing]) || 0;
     const foodAndLife =
       (Number(currentCity.food_base) || 0) * (LIFESTYLES[lifestyle] || 1);
     const transport = Number(currentCity.transport_cost) || 0;
-    const totalCosts = rent + foodAndLife + transport;
-    const balance = netSalary - totalCosts;
+    const sumPersonalExpenses = personalExpenses.reduce(
+      (acc, curr) => acc + Number(curr.amount),
+      0,
+    );
+    const totalCosts = rent + foodAndLife + transport + sumPersonalExpenses;
+    const balance = currentNetto - totalCosts;
 
     const selectedGoal = goals.find((g) => g.id === selectedGoalId);
     const monthsToGoal =
@@ -149,62 +220,31 @@ export default function JobFinderSalaryDashboard() {
       rent,
       foodAndLife,
       transport,
-      balance,
       monthsToGoal,
       selectedGoal,
+      currentBrutto,
+      currentNetto,
+      sumPersonalExpenses,
+      totalCosts,
+      balance,
     };
-  }, [netSalary, city, housing, lifestyle, goals, selectedGoalId, cityData]);
+  }, [
+    salaryInput,
+    salaryType,
+    city,
+    housing,
+    lifestyle,
+    goals,
+    selectedGoalId,
+    cityData,
+    personalExpenses,
+  ]);
 
   if (!isMounted || !calculation) return null;
 
   return (
-    <div className="min-h-screen bg-[#F8F9FD] text-slate-800 font-sans flex w-full">
-      <aside className="w-72 bg-white border-r border-slate-200 p-8 flex flex-col gap-8 hidden lg:flex">
-        <div className="flex items-center gap-2 text-indigo-600 font-bold text-xl mb-4">
-          <Briefcase size={28} />
-          <span>PayCheck.io</span>
-        </div>
-
-        <nav className="space-y-6">
-          <FilterSelect
-            label="Lokalizacja"
-            icon={<MapPin size={14} />}
-            value={city}
-            onChange={(val: React.SetStateAction<string>) => {
-              setCity(val);
-              updateProfile({ city_name: val });
-            }}
-            options={cityData.map((c) => c.city_name)}
-          />
-          <FilterSelect
-            label="Rodzaj lokum"
-            icon={<Home size={14} />}
-            value={housing}
-            onChange={(val: React.SetStateAction<string>) => {
-              setHousing(val);
-              updateProfile({ housing_type: val });
-            }}
-            options={["rentRoom", "rentStudio", "rentApartment"]}
-            labels={{
-              rentRoom: "Pokój",
-              rentStudio: "Kawalerka",
-              rentApartment: "Apartament",
-            }}
-          />
-          <FilterSelect
-            label="Styl życia"
-            icon={<Coffee size={14} />}
-            value={lifestyle}
-            onChange={(val: React.SetStateAction<string>) => {
-              setLifestyle(val);
-              updateProfile({ lifestyle_type: val });
-            }}
-            options={Object.keys(LIFESTYLES)}
-          />
-        </nav>
-      </aside>
-
-      <main className="flex-1 p-8 overflow-y-auto">
+    <div className="min-h-screen bg-[#F8F9FD] text-slate-800 font-sans w-full">
+      <main className="max-w-7xl mx-auto p-8 overflow-y-auto">
         <header className="flex justify-between items-center mb-8">
           <div>
             <h1 className="text-2xl font-bold tracking-tight">
@@ -214,35 +254,165 @@ export default function JobFinderSalaryDashboard() {
           </div>
         </header>
 
+        <div className="bg-white border border-slate-200 rounded-[24px] p-6 mb-8 flex flex-col lg:flex-row items-center gap-8">
+          <nav className="flex flex-col lg:flex-row gap-6 w-full items-center lg:items-end">
+            <FilterSelect
+              label="Lokalizacja"
+              icon={<MapPin size={14} />}
+              value={city}
+              onChange={(val: React.SetStateAction<string>) => {
+                setCity(val);
+                updateProfile({ city_name: val });
+              }}
+              options={cityData.map((c) => c.city_name)}
+            />
+            <FilterSelect
+              label="Rodzaj lokum"
+              icon={<Home size={14} />}
+              value={housing}
+              onChange={(val: React.SetStateAction<string>) => {
+                setHousing(val);
+                updateProfile({ housing_type: val });
+              }}
+              options={["rentRoom", "rentStudio", "rentApartment"]}
+              labels={{
+                rentRoom: "Pokój",
+                rentStudio: "Kawalerka",
+                rentApartment: "Apartament",
+              }}
+            />
+            <FilterSelect
+              label="Styl życia"
+              icon={<Coffee size={14} />}
+              value={lifestyle}
+              onChange={(val: React.SetStateAction<string>) => {
+                setLifestyle(val);
+                updateProfile({ lifestyle_type: val });
+              }}
+              options={Object.keys(LIFESTYLES)}
+            />
+          </nav>
+        </div>
+
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-8">
           <div className="lg:col-span-2 bg-white p-6 rounded-[24px] shadow-sm border border-slate-100">
             <h2 className="font-semibold flex items-center gap-2 mb-6">
               <Wallet className="text-indigo-500" size={20} /> Twoja Pensja
-              Netto
             </h2>
-            <div className="flex items-baseline gap-2">
+
+            <div className="flex items-center bg-slate-50 rounded-2xl p-2 border border-slate-100 focus-within:ring-2 focus-within:ring-indigo-500/20 transition-all">
               <input
                 type="number"
-                value={netSalary}
-                onChange={(e) => setNetSalary(Number(e.target.value))}
-                className="text-5xl font-black text-slate-800 focus:outline-none w-full bg-transparent"
+                value={salaryInput}
+                onChange={(e) => {
+                  const val = Number(e.target.value);
+                  setSalaryInput(val);
+                  syncSalaryToDb(val, salaryType);
+                }}
+                className="text-4xl font-black text-slate-800 focus:outline-none w-full bg-transparent px-4"
               />
-              <span className="text-xl font-bold text-slate-400">PLN</span>
+              <button
+                onClick={() => {
+                  const newType = salaryType === "brutto" ? "netto" : "brutto";
+                  setSalaryType(newType);
+                  syncSalaryToDb(salaryInput, newType);
+                }}
+                className="bg-white border border-slate-200 rounded-xl px-4 py-2 font-bold text-indigo-600 shadow-sm hover:bg-slate-50 transition-colors uppercase"
+              >
+                {salaryType}
+              </button>
+            </div>
+
+            <div className="flex gap-6 mt-6 px-2">
+              <div className="flex flex-col">
+                <span className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">
+                  Szacowane Netto
+                </span>
+                <span className="font-bold text-slate-600">
+                  {Math.round(calculation.currentNetto)} zł
+                </span>
+              </div>
             </div>
           </div>
 
           <div
             className={`p-6 rounded-[24px] shadow-sm border ${calculation.balance > 0 ? "bg-indigo-600 text-white" : "bg-red-500 text-white"}`}
           >
-            <h2 className="font-medium opacity-80 mb-1">Zostaje na czysto</h2>
+            <h2 className="font-medium opacity-80 mb-1">
+              Zostaje na czysto (Netto)
+            </h2>
             <div className="text-4xl font-black mb-4">
-              {calculation.balance.toFixed(0)} zł
+              {Math.round(calculation.balance)} zł
             </div>
             <p className="text-sm opacity-90 font-medium">
               {calculation.balance > 0
                 ? "Możesz odłożyć na marzenia!"
                 : "Przekraczasz budżet!"}
             </p>
+          </div>
+        </div>
+
+        <div className="bg-white p-6 rounded-[24px] shadow-sm border border-slate-100 flex flex-col">
+          <h3 className="font-semibold mb-4 flex items-center gap-2">
+            <TrendingDown size={20} className="text-orange-500" /> Dodatkowe
+            wydatki miesięczne (subskrybcje)
+          </h3>
+          <div className="flex flex-col gap-3 mb-6">
+            <input
+              placeholder="Np. Netflix, Siłownia, Leasing"
+              className="bg-slate-50 border border-slate-200 rounded-xl p-3 outline-none focus:ring-2 focus:ring-indigo-500/20"
+              value={newExpenseTitle}
+              onChange={(e) => setNewExpenseTitle(e.target.value)}
+            />
+            <div className="flex gap-2">
+              <input
+                type="number"
+                placeholder="Kwota (zł)"
+                className="flex-1 bg-slate-50 border border-slate-200 rounded-xl p-3 outline-none"
+                value={newExpenseAmount}
+                onChange={(e) => setNewExpenseAmount(e.target.value)}
+              />
+              <button
+                onClick={addExpense}
+                disabled={isAddingExpense}
+                className="bg-slate-900 text-white px-6 rounded-xl font-bold hover:bg-black transition-colors disabled:opacity-50"
+              >
+                {isAddingExpense ? (
+                  <Loader2 className="animate-spin" size={18} />
+                ) : (
+                  "Dodaj"
+                )}
+              </button>
+            </div>
+          </div>
+
+          <div className="space-y-2 max-h-48 overflow-y-auto pr-2">
+            {personalExpenses.map((exp) => (
+              <div
+                key={exp.id}
+                className="flex justify-between items-center p-3 bg-orange-50/50 rounded-xl border border-orange-100"
+              >
+                <div className="flex flex-col">
+                  <span className="font-medium text-slate-700">
+                    {exp.title}
+                  </span>
+                  <span className="text-xs text-orange-600 font-bold">
+                    {exp.amount} zł / mies.
+                  </span>
+                </div>
+                <button
+                  onClick={() => deleteExpense(exp.id)}
+                  className="text-slate-400 hover:text-red-500 transition-colors"
+                >
+                  <Trash2 size={18} />
+                </button>
+              </div>
+            ))}
+            {personalExpenses.length === 0 && (
+              <p className="text-center text-slate-400 text-sm py-4 italic">
+                Brak dodatkowych obciążeń.
+              </p>
+            )}
           </div>
         </div>
 
@@ -298,6 +468,17 @@ export default function JobFinderSalaryDashboard() {
                 -{calculation.transport} zł
               </span>
             </div>
+
+            <div className="flex justify-between items-center p-3 bg-orange-50 rounded-xl">
+              <div className="flex flex-col">
+                <span className="text-xs font-bold text-orange-400 uppercase">
+                  Własne wydatki
+                </span>
+              </div>
+              <span className="font-black text-red-500">
+                -{calculation.sumPersonalExpenses} zł
+              </span>
+            </div>
           </div>
 
           <div className="mt-6 pt-6 border-t border-dashed border-slate-200">
@@ -309,7 +490,8 @@ export default function JobFinderSalaryDashboard() {
                 {(
                   calculation.rent +
                   calculation.foodAndLife +
-                  calculation.transport
+                  calculation.transport +
+                  calculation.sumPersonalExpenses
                 ).toFixed(0)}{" "}
                 zł
               </span>

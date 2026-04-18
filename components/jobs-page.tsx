@@ -1,8 +1,8 @@
 "use client";
 
 import React, { useState, useMemo } from "react";
-import { Filters } from "@/app/components/filters";
-import { JobCard } from "@/app/components/job-card";
+import { Filters } from "@/components/filters";
+import { JobCard } from "@/components/job-card";
 import { FilterState } from "@/app/types";
 import { jobOffers } from "@/app/data/jobs";
 import { Search } from "lucide-react";
