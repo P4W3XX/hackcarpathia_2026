@@ -6,6 +6,7 @@ import { CareerProgress } from "@/components/career-progress";
 import { careerLevels } from "./data/jobs";
 import { careerPaths } from "./data/careers";
 import { UserProgress, CareerPath } from "./types";
+import JobFinderSalaryDashboard from "./salary-calculator/page";
 
 // Static user progress data
 const userProgress: UserProgress = {
@@ -43,7 +44,7 @@ const calculateCurrentLevel = (progress: UserProgress, levels: typeof careerLeve
 };
 
 export default function Home() {
-  const [currentPage, setCurrentPage] = useState<"home" | "jobs" | "career">("jobs");
+  const [currentPage, setCurrentPage] = useState<"home" | "jobs" | "career" | "salary-calculator">("salary-calculator");
   const [isMenuExpanded, setIsMenuExpanded] = useState(true);
   const [selectedCareerPath, setSelectedCareerPath] = useState<CareerPath | null>(null);
   const [categoryName, setCategoryName] = useState("");
@@ -465,6 +466,10 @@ export default function Home() {
               </div>
             </div>
           </div>
+        )}
+
+        {currentPage === "salary-calculator" && (
+         <JobFinderSalaryDashboard/>
         )}
       </div>
     </main>
