@@ -42,12 +42,6 @@ export default function RegisterPage() {
   const { user } = useUserStore();
 
   useEffect(() => {
-    if (user) {
-      router.push("/trasa");
-    }
-  }, [user, router]);
-
-  useEffect(() => {
     router.prefetch("/login");
   }, [router])
 
@@ -60,7 +54,7 @@ export default function RegisterPage() {
       setServerError(result.error);
     } else {
       alert("Konto utworzone. Sprawdź email, aby potwierdzić rejestrację!");
-      router.push("/trasa");
+      router.push("/login");
     }
   };
 

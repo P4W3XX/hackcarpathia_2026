@@ -1,9 +1,9 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 "use client";
 import React, { useState, useCallback } from "react";
+import { Briefcase, TrendingUp, CheckCircle2, ArrowRight } from "lucide-react";
 import { Menu } from "@/components/menu";
 import { JobsPage } from "@/components/jobs-page";
-import { CareerProgress } from "@/components/career-progress";
 import { careerLevels } from "./data/jobs";
 import { careerPaths } from "./data/careers";
 import { UserProgress, CareerPath } from "./types";
@@ -58,27 +58,17 @@ export default function Home() {
   const [categoryName, setCategoryName] = useState("");
   const [showCategoryForm, setShowCategoryForm] = useState(false);
 
-  // Custom career levels
   const [customLevels, setCustomLevels] = useState<any[]>([]);
-  const [showLevelForm, setShowLevelForm] = useState(false);
-  const [levelTitle, setLevelTitle] = useState("");
-  const [levelSalary, setLevelSalary] = useState({ current: 0, next: 0 });
-  const [levelRequirements, setLevelRequirements] = useState<string[]>([]);
-  const [levelSkills, setLevelSkills] = useState<string[]>([]);
-  const [newRequirement, setNewRequirement] = useState("");
-  const [newSkill, setNewSkill] = useState("");
 
   const handleToggleMenu = useCallback(() => {
     setIsMenuExpanded((prev) => !prev);
   }, []);
 
-  // Calculate current level based on completion status
   const progressWithCalculatedLevel = calculateCurrentLevel(
     userProgress,
     careerLevels,
   );
 
-  // Create custom career path from custom levels
   const customCareerPath: CareerPath | null =
     categoryName && customLevels.length > 0
       ? {
@@ -86,7 +76,7 @@ export default function Home() {
           name: categoryName.replace(/^[^\w\sąćęłńóśźż]+\s*/i, "").trim(),
           emoji: categoryName.charAt(0).match(/[\p{Emoji}]/u)
             ? categoryName.charAt(0)
-            : "📝",
+            : "",
           description: "Twoja niestandardowa ścieżka kariery",
           levels: customLevels.map((level, idx) => ({
             level: idx + 1,
@@ -100,64 +90,32 @@ export default function Home() {
         }
       : null;
 
-  const addLevel = () => {
-    if (
-      levelTitle.trim() &&
-      levelRequirements.length > 0 &&
-      levelSkills.length > 0
-    ) {
-      setCustomLevels([
-        ...customLevels,
-        {
-          title: levelTitle,
-          currentSalary: levelSalary.current,
-          nextSalary: levelSalary.next,
-          requirements: levelRequirements,
-          skills: levelSkills,
-        },
-      ]);
-      resetLevelForm();
-    }
-  };
-
-  const addRequirement = () => {
-    if (newRequirement.trim()) {
-      setLevelRequirements([...levelRequirements, newRequirement.trim()]);
-      setNewRequirement("");
-    }
-  };
-
-  const addSkill = () => {
-    if (newSkill.trim()) {
-      setLevelSkills([...levelSkills, newSkill.trim()]);
-      setNewSkill("");
-    }
-  };
-
-  const removeRequirement = (idx: number) => {
-    setLevelRequirements(levelRequirements.filter((_, i) => i !== idx));
-  };
-
-  const removeSkill = (idx: number) => {
-    setLevelSkills(levelSkills.filter((_, i) => i !== idx));
-  };
-
-  const resetLevelForm = () => {
-    setShowLevelForm(false);
-    setLevelTitle("");
-    setLevelSalary({ current: 0, next: 0 });
-    setLevelRequirements([]);
-    setLevelSkills([]);
-    setNewRequirement("");
-    setNewSkill("");
-  };
-
-  const removeLevel = (idx: number) => {
-    setCustomLevels(customLevels.filter((_, i) => i !== idx));
-  };
+  const homeTiles = [
+    {
+      icon: Briefcase,
+      title: "Porównaj oferty",
+      description:
+        "Łatwo porównuj warunki zatrudnienia, wynagrodzenie i benefity.",
+      page: "jobs" as const,
+    },
+    {
+      icon: TrendingUp,
+      title: "Ścieżka rozwoju",
+      description:
+        "Poznaj wymagania do awansu i wyższych zarobków dzięki AI.",
+      page: "career" as const,
+    },
+    {
+      icon: CheckCircle2,
+      title: "Walidacja formularza",
+      description:
+        "Sprawdź, czy formularz jest poprawnie wypełniony i zgodny z wymogami.",
+      page: "home" as const,
+    },
+  ];
 
   return (
-    <main className="flex min-h-screen">
+    <main className="flex min-h-screen bg-background">
       <Menu
         onNavigate={setCurrentPage}
         isExpanded={isMenuExpanded}
@@ -165,19 +123,20 @@ export default function Home() {
       />
 
       <div
-        className={`flex-1 overflow-auto transition-all duration-500 ease-in-out ${
-          isMenuExpanded ? "ml-90" : "ml-20"
-        }`}
+        className={cn(
+          "flex-1 overflow-auto transition-all duration-500 ease-in-out",
+          isMenuExpanded ? "ml-72" : "ml-20",
+        )}
       >
         {currentPage === "jobs" && <JobsPage />}
 
         {currentPage === "career" && (
-          <div className="animate-in fade-in duration-500 mt-8">
-            <div className="text-center mb-12">
-              <h1 className="text-4xl font-black text-slate-900 mb-4">
+          <div className="animate-in fade-in duration-500">
+            <div className="max-w-4xl mx-auto text-center pt-12 px-6">
+              <h1 className="text-4xl font-bold text-foreground mb-3 tracking-tight text-balance">
                 Twoja Ścieżka Awansu
               </h1>
-              <p className="text-slate-500 max-w-2xl mx-auto">
+              <p className="text-muted-foreground max-w-2xl mx-auto text-pretty">
                 Wykorzystujemy sztuczną inteligencję, aby przeanalizować Twoje
                 dane i stworzyć plan, który zaprowadzi Cię do wymarzonych
                 zarobków.
