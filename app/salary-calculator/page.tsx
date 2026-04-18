@@ -43,7 +43,7 @@ const DATA = {
   lifestyles: {
     "Student (Przetrwanie)": 0.6,
     "Normalny człowiek": 1.0,
-    "Karierowicz (Premium)": 1.8,
+    "Żymianin ✡️ (Premium)": 1.8,
   },
 };
 
@@ -128,6 +128,17 @@ export default function JobFinderSalaryDashboard() {
       setNewGoalPrice("");
     }
     setIsAdding(false);
+  };
+
+  const deleteGoal = async (e: React.MouseEvent, goalId: string) => {
+    e.stopPropagation();
+    const { error } = await supabase.from("goals").delete().eq("id", goalId);
+    if (!error) {
+      setGoals(goals.filter((g) => g.id !== goalId));
+      if (selectedGoalId === goalId) {
+        setSelectedGoalId(goals.find((g) => g.id !== goalId)?.id || "");
+      }
+    }
   };
 
   // Kalkulacje
@@ -354,11 +365,19 @@ export default function JobFinderSalaryDashboard() {
                     onClick={() => setSelectedGoalId(g.id)}
                     className={`p-4 rounded-xl border cursor-pointer transition-all ${selectedGoalId === g.id ? "border-indigo-500 bg-indigo-50" : "border-slate-100 hover:border-slate-300"}`}
                   >
-                    <div className="flex justify-between items-center">
-                      <span className="font-bold">{g.title}</span>
-                      <span className="text-indigo-600 font-black">
-                        {g.price} zł
-                      </span>
+                    <div className="flex justify-between items-start">
+                      <div className="flex flex-col">
+                        <span className="font-bold">{g.title}</span>
+                        <span className="text-indigo-600 font-black">
+                          {g.price} zł
+                        </span>
+                      </div>
+                      <button
+                        onClick={(e) => deleteGoal(e, g.id)}
+                        className="p-2 text-slate-400 hover:text-red-500 hover:bg-red-50 rounded-lg transition-colors"
+                      >
+                        <Trash2 size={28} />
+                      </button>
                     </div>
                   </div>
                 ))}
