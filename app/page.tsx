@@ -10,6 +10,7 @@ import { UserProgress, CareerPath } from "./types";
 import JobFinderSalaryDashboard from "./salary-calculator/page";
 import { CareerAiPath } from "@/components/career-path";
 import { ContractAnalyzer } from "@/components/contract-analyzer";
+import { CvCreator } from "@/components/cv-creator";
 
 // Static user progress data
 const userProgress: UserProgress = {
@@ -52,7 +53,7 @@ const calculateCurrentLevel = (
 
 export default function Home() {
   const [currentPage, setCurrentPage] = useState<
-    "home" | "jobs" | "career" | "salary-calculator"
+    "contract-analyzer" | "cv-creator" | "jobs" | "career" | "salary-calculator" | "home"
   >("salary-calculator");
   const [isMenuExpanded, setIsMenuExpanded] = useState(true);
   const [selectedCareerPath, setSelectedCareerPath] =
@@ -74,13 +75,11 @@ export default function Home() {
     setIsMenuExpanded((prev) => !prev);
   }, []);
 
-  // Calculate current level based on completion status
   const progressWithCalculatedLevel = calculateCurrentLevel(
     userProgress,
     careerLevels,
   );
 
-  // Create custom career path from custom levels
   const customCareerPath: CareerPath | null =
     categoryName && customLevels.length > 0
       ? {
@@ -189,7 +188,7 @@ export default function Home() {
           </div>
         )}
 
-        {currentPage === "home" && (
+        {currentPage === "contract-analyzer" && (
           <div className="animate-in fade-in duration-500">
             <div className="text-center mb-12">
               <h1 className="text-4xl font-black text-slate-900 mb-4">
@@ -205,6 +204,12 @@ export default function Home() {
         )}
 
         {currentPage === "salary-calculator" && <JobFinderSalaryDashboard />}
+
+        {currentPage === "cv-creator" && (
+          <div className="animate-in fade-in duration-500">
+            <CvCreator />
+          </div>
+        )}
       </div>
     </main>
   );

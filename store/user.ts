@@ -1,3 +1,4 @@
+import { string } from "zod";
 import { create } from "zustand";
 import { persist } from "zustand/middleware"; 
 
@@ -7,6 +8,7 @@ interface UserState {
     name: string;
     email: string;
     salary: number;
+    city_name: string;
   } | null;
   setUser: (user: UserState["user"]) => void;
 }
