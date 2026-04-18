@@ -6,6 +6,7 @@ interface UserState {
     id: string;
     name: string;
     email: string;
+    salary: number;
   } | null;
   setUser: (user: UserState["user"]) => void;
 }

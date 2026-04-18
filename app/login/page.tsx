@@ -45,7 +45,7 @@ export default function LoginPage() {
   };
 
   return (
-    <div className="flex h-screen items-center justify-center">
+    <div className="flex h-screen items-center justify-center w-full">
       <Card className="w-full max-w-md pt-5 pb-0 ">
         <CardHeader className=" gap-0 flex justify-between">
           <div>
