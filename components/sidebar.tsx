@@ -39,25 +39,13 @@ export default function Sidebar() {
   const router = useRouter();
 
   useEffect(() => {
-    router.prefetch("/trasa");
-    router.prefetch("/analyzer");
-    router.prefetch("/exchange");
-    router.prefetch("/harmonogram");
-    router.prefetch("/settings");
-    router.prefetch("/bills");
-    requestAnimationFrame(() => {
-      setIsMounted(true);
-    });
-  }, [router]);
-
-  useEffect(() => {
     const fetchUser = async () => {
       const { data: { user: authUser } } = await supabase.auth.getUser();
       
       if (authUser) {
         const { data: profile, error } = await supabase
           .from('profiles')
-          .select('full_name')
+          .select('full_name, salary')
           .eq('id', authUser.id)
           .single();
 
@@ -66,6 +54,7 @@ export default function Sidebar() {
             id: authUser.id,
             email: authUser.email!,
             name: profile.full_name || authUser.user_metadata.full_name, 
+            salary: profile.salary
           });
         } else {
           console.warn("Zalogowany, ale brak rekordu w tabeli profiles");
