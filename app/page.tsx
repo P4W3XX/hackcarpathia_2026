@@ -9,6 +9,7 @@ import { careerPaths } from "./data/careers";
 import { UserProgress, CareerPath } from "./types";
 import JobFinderSalaryDashboard from "./salary-calculator/page";
 import { CareerAiPath } from "@/components/career-path";
+import { ContractAnalyzer } from "@/components/contract-analyzer";
 
 // Static user progress data
 const userProgress: UserProgress = {
@@ -50,7 +51,9 @@ const calculateCurrentLevel = (
 };
 
 export default function Home() {
-  const [currentPage, setCurrentPage] = useState<"home" | "jobs" | "career" | "salary-calculator">("salary-calculator");
+  const [currentPage, setCurrentPage] = useState<
+    "home" | "jobs" | "career" | "salary-calculator"
+  >("salary-calculator");
   const [isMenuExpanded, setIsMenuExpanded] = useState(true);
   const [selectedCareerPath, setSelectedCareerPath] =
     useState<CareerPath | null>(null);
@@ -187,59 +190,21 @@ export default function Home() {
         )}
 
         {currentPage === "home" && (
-          <div className="min-h-screen bg-gradient-to-br from-slate-950 via-slate-900 to-slate-950 p-8">
-            <div className="max-w-4xl">
-              <h1 className="text-4xl font-bold text-white mb-4">
-                Witaj w panelu analiz
+          <div className="animate-in fade-in duration-500">
+            <div className="text-center mb-12">
+              <h1 className="text-4xl font-black text-slate-900 mb-4">
+                Audyt Prawny AI
               </h1>
-              <p className="text-slate-300 text-lg mb-8">
-                Wybierz funkcję z menu po lewej stronie, aby rozpocząć pracę z
-                narzędziami do analizy ofert pracy.
+              <p className="text-slate-500 max-w-2xl mx-auto">
+                Nie daj się oszukać. Nasz algorytm prześwietli każdą stronę
+                Twojej przyszłej umowy.
               </p>
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-                <div
-                  onClick={() => setCurrentPage("jobs")}
-                  className="bg-slate-800/50 border border-slate-700 rounded-xl p-6 hover:border-blue-600 transition-all cursor-pointer hover:shadow-lg hover:shadow-blue-500/20"
-                >
-                  <div className="text-3xl mb-3">💼</div>
-                  <h3 className="text-xl font-semibold text-white mb-2">
-                    Porównaj oferty
-                  </h3>
-                  <p className="text-slate-400">
-                    Łatwo porównuj warunki zatrudnienia, wynagrodzenie i
-                    benefity między różnymi ofertami pracy.
-                  </p>
-                </div>
-                <div
-                  onClick={() => setCurrentPage("career")}
-                  className="bg-slate-800/50 border border-slate-700 rounded-xl p-6 hover:border-green-600 transition-all cursor-pointer hover:shadow-lg hover:shadow-green-500/20"
-                >
-                  <div className="text-3xl mb-3">🚀</div>
-                  <h3 className="text-xl font-semibold text-white mb-2">
-                    Ścieżka rozwoju
-                  </h3>
-                  <p className="text-slate-400">
-                    Poznaj wymagania do awansu i zarobienia więcej pieniędzy.
-                  </p>
-                </div>
-                <div className="bg-slate-800/50 border border-slate-700 rounded-xl p-6 hover:border-cyan-600 transition-all cursor-pointer hover:shadow-lg hover:shadow-cyan-500/20">
-                  <div className="text-3xl mb-3">✅</div>
-                  <h3 className="text-xl font-semibold text-white mb-2">
-                    Walidacja formularza
-                  </h3>
-                  <p className="text-slate-400">
-                    Sprawdź, czy formularz jest poprawnie wypełniony i zgodny z
-                    wymogami.
-                  </p>
-                </div>
-              </div>
             </div>
+            <ContractAnalyzer />
           </div>
         )}
 
-        {currentPage === "salary-calculator" && (
-         <JobFinderSalaryDashboard/>
-        )}
+        {currentPage === "salary-calculator" && <JobFinderSalaryDashboard />}
       </div>
     </main>
   );
