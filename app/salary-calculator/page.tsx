@@ -76,6 +76,7 @@ export default function JobFinderSalaryDashboard() {
           email: authUser.email!,
           name: profile.full_name,
           salary: profile.salary,
+          city_name: profile.city_name,
         });
 
         const initialSalary = profile.salary || 0;
