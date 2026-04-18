@@ -13,6 +13,8 @@ import {
   ShoppingBag,
   Receipt,
   LogOut,
+  Calculator,
+  Newspaper,
 } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { cn } from "@/lib/utils";
@@ -27,7 +29,15 @@ import {
 } from "@/components/ui/dropdown-menu";
 
 interface MenuProps {
-  onNavigate?: (page: "jobs" | "career" | "home") => void;
+  onNavigate?: (
+    page:
+      | "contract-analyzer"
+      | "cv-creator"
+      | "jobs"
+      | "career"
+      | "salary-calculator"
+      | "home",
+  ) => void;
   isExpanded: boolean;
   onToggleMenu: () => void;
 }
@@ -37,12 +47,19 @@ export const Menu: React.FC<MenuProps> = ({
   isExpanded,
   onToggleMenu,
 }) => {
-  const [activeItem, setActiveItem] = useState<string>("jobs");
+  const [activeItem, setActiveItem] = useState<string>("salary-calculator");
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
   const user = { name: "John Doe" };
   const router = useRouter();
 
   const menuItems = [
+    {
+      id: "salary-calculator",
+      label: "Kalkulator wynagrodzeń",
+      icon: Calculator,
+      description: "Oblicz potencjalne zarobki",
+      page: "salary-calculator" as const,
+    },
     {
       id: "jobs",
       label: "Oferty pracy",
@@ -58,11 +75,18 @@ export const Menu: React.FC<MenuProps> = ({
       page: "career" as const,
     },
     {
-      id: "form",
-      label: "Zgodność formularza",
+      id: "contract-analyzer",
+      label: "Audyt umowy",
       icon: CheckCircle,
-      description: "Walidacja danych",
-      page: "home" as const,
+      description: "Walidacja formalna dokumentu",
+      page: "contract-analyzer" as const,
+    },
+    {
+      id: "cv-creator",
+      label: "Kreator CV",
+      icon: Newspaper,
+      description: "Stwórz swoje CV",
+      page: "cv-creator" as const,
     },
   ];
 
@@ -77,10 +101,9 @@ export const Menu: React.FC<MenuProps> = ({
     <aside
       className={cn(
         "fixed z-50 h-svh bg-sidebar text-sidebar-foreground border-r border-sidebar-border transition-all duration-500 ease-in-out overflow-hidden flex flex-col",
-        isExpanded ? "w-72" : "w-17"
+        isExpanded ? "w-72" : "w-17",
       )}
     >
-      {/* Header */}
       <div className="flex items-center justify-between p-4 border-b border-sidebar-border h-18">
         {isExpanded && (
           <div className="flex items-center gap-2">
@@ -97,11 +120,14 @@ export const Menu: React.FC<MenuProps> = ({
           aria-label="Toggle menu"
           className="ml-auto"
         >
-          {isExpanded ? <X className="size-5" /> : <MenuIcon className="size-5" />}
+          {isExpanded ? (
+            <X className="size-5" />
+          ) : (
+            <MenuIcon className="size-5" />
+          )}
         </Button>
       </div>
 
-      {/* Menu Items */}
       <nav className="p-3 flex flex-col gap-1 overflow-y-auto flex-1">
         {menuItems.map((item) => {
           const Icon = item.icon;
@@ -115,14 +141,16 @@ export const Menu: React.FC<MenuProps> = ({
                 "group relative w-full rounded-lg text-left transition-all duration-200 flex items-center gap-3 px-3 py-2.5",
                 isActive
                   ? "bg-primary text-primary-foreground shadow-sm"
-                  : "text-sidebar-foreground hover:bg-sidebar-accent hover:text-sidebar-accent-foreground"
+                  : "text-sidebar-foreground hover:bg-sidebar-accent hover:text-sidebar-accent-foreground",
               )}
               title={!isExpanded ? item.label : undefined}
             >
               <Icon
                 className={cn(
                   "size-5 flex-shrink-0",
-                  isActive ? "text-primary-foreground" : "text-muted-foreground group-hover:text-sidebar-accent-foreground"
+                  isActive
+                    ? "text-primary-foreground"
+                    : "text-muted-foreground group-hover:text-sidebar-accent-foreground",
                 )}
               />
 
@@ -136,7 +164,7 @@ export const Menu: React.FC<MenuProps> = ({
                       "text-xs truncate mt-0.5",
                       isActive
                         ? "text-primary-foreground/80"
-                        : "text-muted-foreground"
+                        : "text-muted-foreground",
                     )}
                   >
                     {item.description}
@@ -148,14 +176,13 @@ export const Menu: React.FC<MenuProps> = ({
         })}
       </nav>
 
-      {/* Footer user dropdown */}
       <div className="border-t border-sidebar-border p-3">
         <DropdownMenu open={isDropdownOpen} onOpenChange={setIsDropdownOpen}>
           <DropdownMenuTrigger asChild>
             <button
               className={cn(
                 "relative flex w-full cursor-pointer items-center gap-3 rounded-lg p-2 hover:bg-sidebar-accent transition-colors",
-                !isExpanded && "justify-center"
+                !isExpanded && "justify-center",
               )}
             >
               <div className="relative flex size-9 items-center justify-center rounded-lg bg-primary font-semibold text-primary-foreground flex-shrink-0 text-sm">
@@ -173,7 +200,7 @@ export const Menu: React.FC<MenuProps> = ({
                   <ChevronUp
                     className={cn(
                       "size-4 text-muted-foreground transition-transform",
-                      isDropdownOpen && "rotate-180"
+                      isDropdownOpen && "rotate-180",
                     )}
                   />
                 </>

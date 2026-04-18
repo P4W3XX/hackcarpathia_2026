@@ -7,6 +7,7 @@ import { JobsPage } from "@/components/jobs-page";
 import { careerLevels } from "./data/jobs";
 import { careerPaths } from "./data/careers";
 import { UserProgress, CareerPath } from "./types";
+import JobFinderSalaryDashboard from "./salary-calculator/page";
 import { CareerAiPath } from "@/components/career-path";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
@@ -17,6 +18,8 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
+import { ContractAnalyzer } from "@/components/contract-analyzer";
+import { CvCreator } from "@/components/cv-creator";
 
 // Static user progress data
 const userProgress: UserProgress = {
@@ -58,9 +61,9 @@ const calculateCurrentLevel = (
 };
 
 export default function Home() {
-  const [currentPage, setCurrentPage] = useState<"home" | "jobs" | "career">(
-    "jobs",
-  );
+  const [currentPage, setCurrentPage] = useState<
+    "contract-analyzer" | "cv-creator" | "jobs" | "career" | "salary-calculator" | "home"
+  >("salary-calculator");
   const [isMenuExpanded, setIsMenuExpanded] = useState(true);
   const [selectedCareerPath, setSelectedCareerPath] =
     useState<CareerPath | null>(null);
@@ -73,13 +76,11 @@ export default function Home() {
     setIsMenuExpanded((prev) => !prev);
   }, []);
 
-  // Calculate current level based on completion status
   const progressWithCalculatedLevel = calculateCurrentLevel(
     userProgress,
     careerLevels,
   );
 
-  // Create custom career path from custom levels
   const customCareerPath: CareerPath | null =
     categoryName && customLevels.length > 0
       ? {
@@ -205,6 +206,29 @@ export default function Home() {
                 })}
               </div>
             </div>
+          </div>
+        )}
+
+        {currentPage === "contract-analyzer" && (
+          <div className="animate-in fade-in duration-500">
+            <div className="text-center mb-12">
+              <h1 className="text-4xl font-black text-slate-900 mb-4">
+                Audyt Prawny AI
+              </h1>
+              <p className="text-slate-500 max-w-2xl mx-auto">
+                Nie daj się oszukać. Nasz algorytm prześwietli każdą stronę
+                Twojej przyszłej umowy.
+              </p>
+            </div>
+            <ContractAnalyzer />
+          </div>
+        )}
+
+        {currentPage === "salary-calculator" && <JobFinderSalaryDashboard />}
+
+        {currentPage === "cv-creator" && (
+          <div className="animate-in fade-in duration-500">
+            <CvCreator />
           </div>
         )}
       </div>
