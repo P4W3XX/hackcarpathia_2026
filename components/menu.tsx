@@ -1,6 +1,10 @@
 "use client";
 
 import React, { useState } from "react";
+import { Briefcase, Menu as MenuIcon, X, TrendingUp, CheckCircle, Calculator, Receipt, Stethoscope } from "lucide-react";
+
+interface MenuProps {
+  onNavigate?: (page: "jobs" | "career" | "home" | "salary-calculator" | "taxes" | "doctors") => void;
 import {
   Briefcase,
   Menu as MenuIcon,
@@ -57,49 +61,50 @@ export const Menu: React.FC<MenuProps> = ({
   const user = useUserStore((state) => state.user);
   const router = useRouter();
 
-  const menuItems = [
-    {
-      id: "salary-calculator",
-      label: "Kalkulator wynagrodzeń",
-      icon: Calculator,
-      description: "Oblicz potencjalne zarobki",
-      page: "salary-calculator" as const,
-    },
-    {
-      id: "jobs",
-      label: "Oferty pracy",
-      icon: Briefcase,
-      description: "Porównaj warunki i wynagrodzenie",
-      page: "jobs" as const,
-    },
-    {
-      id: "career",
-      label: "Ścieżka rozwoju",
-      icon: TrendingUp,
-      description: "Wymagania do awansu",
-      page: "career" as const,
-    },
-    {
-      id: "contract-analyzer",
-      label: "Audyt umowy",
-      icon: CheckCircle,
-      description: "Walidacja formalna dokumentu",
-      page: "contract-analyzer" as const,
-    },
-    {
-      id: "cv-creator",
-      label: "Kreator CV",
-      icon: Newspaper,
-      description: "Stwórz swoje CV",
-      page: "cv-creator" as const,
-    },
-         {
+    const menuItems = [
+                {
+            id: "salary-calculator",
+            label: "Kalkulator wynagrodzeń",
+            icon: Calculator,
+            description: "Oblicz swoje potencjalne zarobki",
+            page: "salary-calculator" as const,
+        },
+        {
+            id: "jobs",
+            label: "Oferty pracy",
+            icon: Briefcase,
+            description: "Porównaj warunki pracy i wynagrodzenie",
+            page: "jobs" as const,
+        },
+        {
+            id: "career",
+            label: "Ścieżka rozwoju",
+            icon: TrendingUp,
+            description: "Wymagania do awansu i wyższych zarobków",
+            page: "career" as const,
+        },
+        {
+            id: "taxes",
+            label: "Podatki i terminy",
+            icon: Receipt,
+            description: "Instrukcje odprowadzania podatków",
+            page: "taxes" as const,
+        },
+        {
             id: "doctors",
             label: "Wizyty u lekarza",
             icon: Stethoscope,
             description: "Planuj wizyty i monitoruj zdrowie",
             page: "doctors" as const,
         },
+        {
+            id: "form",
+            label: "Sprawdź zgodność formularza",
+            icon: CheckCircle,
+            description: "Walidacja i weryfikacja danych",
+            page: "home" as const,
+        },
+    ];
                 {
             id: "taxes",
             label: "Podatki i terminy",
