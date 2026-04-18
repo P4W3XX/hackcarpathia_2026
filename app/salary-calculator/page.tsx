@@ -68,6 +68,7 @@ export default function JobFinderSalaryDashboard() {
   const [lifestyle, setLifestyle] = useState("Normalny człowiek");
 
   useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     setIsMounted(true);
   }, []);
 
