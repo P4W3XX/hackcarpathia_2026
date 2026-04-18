@@ -34,7 +34,7 @@ export default function JobFinderSalaryDashboard() {
   const [salaryType, setSalaryType] = useState<"brutto" | "netto">("netto");
 
   const [city, setCity] = useState("Warszawa");
-  const [housing, setHousing] = useState("rentStudio");
+  const [housing, setHousing] = useState("rent_studio");
   const [lifestyle, setLifestyle] = useState("Normalny człowiek");
 
   const [goals, setGoals] = useState<any[]>([]);
@@ -83,7 +83,7 @@ export default function JobFinderSalaryDashboard() {
         setSalaryType("brutto");
 
         setCity(profile.city_name || "Warszawa");
-        setHousing(profile.housing_type || "rentStudio");
+        setHousing(profile.housing_type || "rent_studio");
         setLifestyle(profile.lifestyle_type || "Normalny człowiek");
 
         const { data: userExpenses } = await supabase
@@ -204,7 +204,7 @@ export default function JobFinderSalaryDashboard() {
       (Number(currentCity.food_base) || 0) * (LIFESTYLES[lifestyle] || 1);
     const transport = Number(currentCity.transport_cost) || 0;
     const sumPersonalExpenses = personalExpenses.reduce(
-      (acc, curr) => acc + Number(curr.amount),
+      (acc, curr) => acc + (Number(curr.amount) || 0),
       0,
     );
     const totalCosts = rent + foodAndLife + transport + sumPersonalExpenses;
@@ -270,15 +270,15 @@ export default function JobFinderSalaryDashboard() {
               label="Rodzaj lokum"
               icon={<Home size={14} />}
               value={housing}
-              onChange={(val: React.SetStateAction<string>) => {
+              onChange={(val: string) => {
                 setHousing(val);
                 updateProfile({ housing_type: val });
               }}
-              options={["rentRoom", "rentStudio", "rentApartment"]}
+              options={["rent_room", "rent_studio", "rent_apartment"]}
               labels={{
-                rentRoom: "Pokój",
-                rentStudio: "Kawalerka",
-                rentApartment: "Apartament",
+                rent_room: "Pokój",
+                rent_studio: "Kawalerka",
+                rent_apartment: "Apartament",
               }}
             />
             <FilterSelect
@@ -428,15 +428,15 @@ export default function JobFinderSalaryDashboard() {
                   Dach nad głową
                 </span>
                 <span className="font-semibold text-slate-700">
-                  {housing === "rentRoom"
-                    ? "Pokój u obcych"
-                    : housing === "rentStudio"
+                  {housing === "rent_room"
+                    ? "Wynajem pokoju"
+                    : housing === "rent_studio"
                       ? "Własna kawalerka"
-                      : "Apartament"}
+                      : "Mieszkanie (2+ pokoje)"}
                 </span>
               </div>
               <span className="font-black text-red-500">
-                -{calculation.rent} zł
+                -{Math.round(calculation.rent)} zł
               </span>
             </div>
 
@@ -487,12 +487,7 @@ export default function JobFinderSalaryDashboard() {
                 Łączne wydatki:
               </span>
               <span className="text-2xl font-black text-red-600">
-                {(
-                  calculation.rent +
-                  calculation.foodAndLife +
-                  calculation.transport +
-                  calculation.sumPersonalExpenses
-                ).toFixed(0)}{" "}
+                {Math.round(calculation.totalCosts)}
                 zł
               </span>
             </div>
