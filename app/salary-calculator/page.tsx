@@ -19,7 +19,7 @@ import { createClient } from "@/lib/supabase/client";
 const LIFESTYLES: Record<string, number> = {
   "Student (Przetrwanie)": 0.6,
   "Normalny człowiek": 1.0,
-  "Karierowicz (Premium)": 1.8,
+  "Żymianin ✡️ (Premium)": 1.8,
 };
 
 export default function JobFinderSalaryDashboard() {
