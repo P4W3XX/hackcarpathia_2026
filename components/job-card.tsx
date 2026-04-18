@@ -51,7 +51,7 @@ export const JobCard: React.FC<JobCardProps> = ({ job }) => {
 
       {/* Salary */}
       <div className={`text-xl font-thin mb-2`}>
-        ${job.salary.min.toLocaleString()}/month
+        {job.salary.min.toLocaleString()}zł /month
       </div>
 
       {/* Title and Company */}
