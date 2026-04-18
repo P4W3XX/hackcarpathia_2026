@@ -44,6 +44,11 @@ export default function JobFinderSalaryDashboard() {
   const [newGoalPrice, setNewGoalPrice] = useState("");
   const [isAdding, setIsAdding] = useState(false);
 
+  const [personalExpenses, setPersonalExpenses] = useState<any[]>([]);
+  const [newExpenseTitle, setNewExpenseTitle] = useState("");
+  const [newExpenseAmount, setNewExpenseAmount] = useState("");
+  const [isAddingExpense, setIsAddingExpense] = useState(false);
+
   useEffect(() => {
     // eslint-disable-next-line react-hooks/set-state-in-effect
     setIsMounted(true);
@@ -73,13 +78,19 @@ export default function JobFinderSalaryDashboard() {
           salary: profile.salary,
         });
 
-        const initialGross = profile.salary || 0;
-        setSalaryInput(Math.round(initialGross * TAX_FACTOR));
-        setSalaryType("netto");
+        const initialSalary = profile.salary || 0;
+        setSalaryInput(initialSalary);
+        setSalaryType("brutto");
 
         setCity(profile.city_name || "Warszawa");
         setHousing(profile.housing_type || "rentStudio");
         setLifestyle(profile.lifestyle_type || "Normalny człowiek");
+
+        const { data: userExpenses } = await supabase
+          .from("personal_expenses")
+          .select("*")
+          .order("created_at", { ascending: false });
+        if (userExpenses) setPersonalExpenses(userExpenses);
       }
 
       const { data: userGoals } = await supabase
@@ -146,6 +157,38 @@ export default function JobFinderSalaryDashboard() {
     }
   };
 
+  const addExpense = async () => {
+    if (!newExpenseTitle || !newExpenseAmount || !user) return;
+    setIsAddingExpense(true);
+    const { data, error } = await supabase
+      .from("personal_expenses")
+      .insert([
+        {
+          title: newExpenseTitle,
+          amount: Number(newExpenseAmount),
+          user_id: user.id,
+        },
+      ])
+      .select()
+      .single();
+
+    if (!error) {
+      setPersonalExpenses([data, ...personalExpenses]);
+      setNewExpenseTitle("");
+      setNewExpenseAmount("");
+    }
+    setIsAddingExpense(false);
+  };
+
+  const deleteExpense = async (id: string) => {
+    const { error } = await supabase
+      .from("personal_expenses")
+      .delete()
+      .eq("id", id);
+    if (!error)
+      setPersonalExpenses(personalExpenses.filter((e) => e.id !== id));
+  };
+
   const calculation = useMemo(() => {
     const currentCity =
       cityData.find((c) => c.city_name === city) || cityData[0];
@@ -160,7 +203,11 @@ export default function JobFinderSalaryDashboard() {
     const foodAndLife =
       (Number(currentCity.food_base) || 0) * (LIFESTYLES[lifestyle] || 1);
     const transport = Number(currentCity.transport_cost) || 0;
-    const totalCosts = rent + foodAndLife + transport;
+    const sumPersonalExpenses = personalExpenses.reduce(
+      (acc, curr) => acc + Number(curr.amount),
+      0,
+    );
+    const totalCosts = rent + foodAndLife + transport + sumPersonalExpenses;
     const balance = currentNetto - totalCosts;
 
     const selectedGoal = goals.find((g) => g.id === selectedGoalId);
@@ -173,11 +220,13 @@ export default function JobFinderSalaryDashboard() {
       rent,
       foodAndLife,
       transport,
-      balance,
       monthsToGoal,
       selectedGoal,
       currentBrutto,
       currentNetto,
+      sumPersonalExpenses,
+      totalCosts,
+      balance,
     };
   }, [
     salaryInput,
@@ -188,6 +237,7 @@ export default function JobFinderSalaryDashboard() {
     goals,
     selectedGoalId,
     cityData,
+    personalExpenses,
   ]);
 
   if (!isMounted || !calculation) return null;
@@ -261,18 +311,25 @@ export default function JobFinderSalaryDashboard() {
                 }}
                 className="text-4xl font-black text-slate-800 focus:outline-none w-full bg-transparent px-4"
               />
-              <div className="bg-white border border-slate-200 rounded-xl px-4 py-2 font-bold text-indigo-600 shadow-sm">
-                NETTO
-              </div>
+              <button
+                onClick={() => {
+                  const newType = salaryType === "brutto" ? "netto" : "brutto";
+                  setSalaryType(newType);
+                  syncSalaryToDb(salaryInput, newType);
+                }}
+                className="bg-white border border-slate-200 rounded-xl px-4 py-2 font-bold text-indigo-600 shadow-sm hover:bg-slate-50 transition-colors uppercase"
+              >
+                {salaryType}
+              </button>
             </div>
 
             <div className="flex gap-6 mt-6 px-2">
               <div className="flex flex-col">
                 <span className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">
-                  Szacowane Brutto
+                  Szacowane Netto
                 </span>
                 <span className="font-bold text-slate-600">
-                  {Math.round(calculation.currentBrutto)} zł
+                  {Math.round(calculation.currentNetto)} zł
                 </span>
               </div>
             </div>
@@ -292,6 +349,70 @@ export default function JobFinderSalaryDashboard() {
                 ? "Możesz odłożyć na marzenia!"
                 : "Przekraczasz budżet!"}
             </p>
+          </div>
+        </div>
+
+        <div className="bg-white p-6 rounded-[24px] shadow-sm border border-slate-100 flex flex-col">
+          <h3 className="font-semibold mb-4 flex items-center gap-2">
+            <TrendingDown size={20} className="text-orange-500" /> Dodatkowe
+            wydatki miesięczne (subskrybcje)
+          </h3>
+          <div className="flex flex-col gap-3 mb-6">
+            <input
+              placeholder="Np. Netflix, Siłownia, Leasing"
+              className="bg-slate-50 border border-slate-200 rounded-xl p-3 outline-none focus:ring-2 focus:ring-indigo-500/20"
+              value={newExpenseTitle}
+              onChange={(e) => setNewExpenseTitle(e.target.value)}
+            />
+            <div className="flex gap-2">
+              <input
+                type="number"
+                placeholder="Kwota (zł)"
+                className="flex-1 bg-slate-50 border border-slate-200 rounded-xl p-3 outline-none"
+                value={newExpenseAmount}
+                onChange={(e) => setNewExpenseAmount(e.target.value)}
+              />
+              <button
+                onClick={addExpense}
+                disabled={isAddingExpense}
+                className="bg-slate-900 text-white px-6 rounded-xl font-bold hover:bg-black transition-colors disabled:opacity-50"
+              >
+                {isAddingExpense ? (
+                  <Loader2 className="animate-spin" size={18} />
+                ) : (
+                  "Dodaj"
+                )}
+              </button>
+            </div>
+          </div>
+
+          <div className="space-y-2 max-h-48 overflow-y-auto pr-2">
+            {personalExpenses.map((exp) => (
+              <div
+                key={exp.id}
+                className="flex justify-between items-center p-3 bg-orange-50/50 rounded-xl border border-orange-100"
+              >
+                <div className="flex flex-col">
+                  <span className="font-medium text-slate-700">
+                    {exp.title}
+                  </span>
+                  <span className="text-xs text-orange-600 font-bold">
+                    {exp.amount} zł / mies.
+                  </span>
+                </div>
+                <button
+                  onClick={() => deleteExpense(exp.id)}
+                  className="text-slate-400 hover:text-red-500 transition-colors"
+                >
+                  <Trash2 size={18} />
+                </button>
+              </div>
+            ))}
+            {personalExpenses.length === 0 && (
+              <p className="text-center text-slate-400 text-sm py-4 italic">
+                Brak dodatkowych obciążeń.
+              </p>
+            )}
           </div>
         </div>
 
@@ -347,6 +468,17 @@ export default function JobFinderSalaryDashboard() {
                 -{calculation.transport} zł
               </span>
             </div>
+
+            <div className="flex justify-between items-center p-3 bg-orange-50 rounded-xl">
+              <div className="flex flex-col">
+                <span className="text-xs font-bold text-orange-400 uppercase">
+                  Własne wydatki
+                </span>
+              </div>
+              <span className="font-black text-red-500">
+                -{calculation.sumPersonalExpenses} zł
+              </span>
+            </div>
           </div>
 
           <div className="mt-6 pt-6 border-t border-dashed border-slate-200">
@@ -358,7 +490,8 @@ export default function JobFinderSalaryDashboard() {
                 {(
                   calculation.rent +
                   calculation.foodAndLife +
-                  calculation.transport
+                  calculation.transport +
+                  calculation.sumPersonalExpenses
                 ).toFixed(0)}{" "}
                 zł
               </span>
