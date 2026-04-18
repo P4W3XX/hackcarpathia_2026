@@ -20,6 +20,8 @@ import {
 import { useRouter } from "next/navigation";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
+import { logoutAction } from "@/actions/auth-action";
+import { useUserStore } from "@/store/user";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -52,7 +54,7 @@ export const Menu: React.FC<MenuProps> = ({
 }) => {
   const [activeItem, setActiveItem] = useState<string>("salary-calculator");
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
-  const user = { name: "John Doe" };
+  const user = useUserStore((state) => state.user);
   const router = useRouter();
 
   const menuItems = [
@@ -232,15 +234,6 @@ export const Menu: React.FC<MenuProps> = ({
             className="w-64"
           >
             <DropdownMenuGroup>
-              <DropdownMenuItem onClick={() => router.push("/exchange")}>
-                <ShoppingBag className="size-4" />
-                Wymień punkty eko
-              </DropdownMenuItem>
-              <DropdownMenuItem onClick={() => router.push("/bills")}>
-                <Receipt className="size-4" />
-                Twoje rachunki
-              </DropdownMenuItem>
-              <DropdownMenuSeparator />
               <DropdownMenuItem onClick={() => router.push("/settings")}>
                 <Settings className="size-4" />
                 Ustawienia
@@ -248,7 +241,7 @@ export const Menu: React.FC<MenuProps> = ({
             </DropdownMenuGroup>
             <DropdownMenuSeparator />
             <DropdownMenuGroup>
-              <DropdownMenuItem variant="destructive">
+              <DropdownMenuItem onClick={() => logoutAction()} variant="destructive">
                 <LogOut className="size-4" />
                 Wyloguj
               </DropdownMenuItem>
