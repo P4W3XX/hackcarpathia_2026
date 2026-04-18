@@ -1,6 +1,9 @@
 "use client";
 
 <<<<<<< HEAD
+<<<<<<< HEAD
+=======
+>>>>>>> b163baad18dd26749462734e9a20316bc8866003
 import React, { useState } from "react";
 import { Menu } from "./components/menu";
 import { JobsPage } from "./components/jobs-page";
@@ -86,6 +89,7 @@ export default function Home() {
         )}
       </div>
     </main>
+<<<<<<< HEAD
 =======
 import { useUserStore } from "@/store/user";
 import Link from "next/link";
@@ -146,5 +150,8 @@ export default function Home() {
       </main>
     </div>
 >>>>>>> 04a75ecafbd9ec049169044a3d0d19a2602256ba
+=======
+
+>>>>>>> b163baad18dd26749462734e9a20316bc8866003
   );
 }
