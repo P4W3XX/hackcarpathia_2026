@@ -1,353 +1,229 @@
 "use client";
 
-import React, { useMemo, useState } from "react";
-import { Zap, ChevronDown, Briefcase, Clock, Globe, RotateCcw } from "lucide-react";
-import { jobOffers } from "@/app/data/jobs";
+import React, { useState, useEffect } from "react";
+import { 
+  Zap, 
+  ChevronDown, 
+  Briefcase, 
+  Globe, 
+  RotateCcw,
+  Banknote
+} from "lucide-react";
 import {
   useSalaryRange,
-  useWorkSchedule,
   useEmploymentType,
   useWorkStyle,
   useUpdateSalaryRange,
-  useToggleWorkSchedule,
   useToggleEmploymentType,
   useToggleWorkStyle,
   useResetFilters,
 } from "@/store/filters";
+import { createClient } from "@/lib/supabase/client";
 
 export const Filters: React.FC = () => {
+  const [maxSalaryInDb, setMaxSalaryInDb] = useState(30000);
   const [expandedSections, setExpandedSections] = useState<Record<string, boolean>>({
-    schedule: true,
     salary: true,
-    employment: false,
-    style: false,
+    employment: true,
+    style: true,
   });
 
   const salaryRange = useSalaryRange();
-  const workSchedule = useWorkSchedule();
   const employmentType = useEmploymentType();
   const workStyle = useWorkStyle();
   
   const updateSalaryRange = useUpdateSalaryRange();
-  const toggleWorkSchedule = useToggleWorkSchedule();
   const toggleEmploymentType = useToggleEmploymentType();
   const toggleWorkStyle = useToggleWorkStyle();
   const resetFilters = useResetFilters();
 
-  const workScheduleOptions = [
-    "Full-time",
-    "Part-time",
-    "Internship",
-    "Project work",
-    "Volunteering",
-  ];
-  const employmentTypeOptions = [
-    "Full day",
-    "Flexible schedule",
-    "Shift work",
-    "Distant work",
-  ];
-  const workStyleOptions = ["Office", "Hybrid", "Remote"];
+  const supabase = createClient();
 
-  const toggleSection = (section: string) => {
-    setExpandedSections((prev) => ({
-      ...prev,
-      [section]: !prev[section],
-    }));
-  };
+  useEffect(() => {
+    const fetchMaxSalary = async () => {
+      const { data } = await supabase
+        .from("job_offers")
+        .select("salary_gross")
+        .order("salary_gross", { ascending: false })
+        .limit(1)
+        .single();
+      
+      if (data) {
+        setMaxSalaryInDb(data.salary_gross);
+      }
+    };
+    fetchMaxSalary();
+  }, [supabase]);
 
-  // Calculate salary distribution for chart
-  const salaryDistribution = useMemo(() => {
-    const bucketSize = 1000;
-    const buckets: Record<number, number> = {};
-
-    jobOffers.forEach((job) => {
-      const bucket = Math.floor(job.salary.min / bucketSize) * bucketSize;
-      buckets[bucket] = (buckets[bucket] || 0) + 1;
-    });
-
-    return Object.entries(buckets)
-      .sort(([a], [b]) => parseInt(a) - parseInt(b))
-      .map(([salary, count]) => ({
-        salary: parseInt(salary),
-        count,
-      }));
-  }, []);
-
-  const maxCount = useMemo(() => {
-    return Math.max(...salaryDistribution.map((d) => d.count), 1);
-  }, [salaryDistribution]);
-
-  const handleSalaryMinChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const newMin = parseInt(e.target.value);
+  // Obsługa zmiany pensji MIN
+  const handleMinSalaryChange = (value: string) => {
+    const newMin = parseInt(value);
+    // Nie pozwól, aby MIN było większe niż obecne MAX
     if (newMin <= salaryRange[1]) {
       updateSalaryRange([newMin, salaryRange[1]]);
     }
   };
 
-  const handleSalaryMaxChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const newMax = parseInt(e.target.value);
+  // Obsługa zmiany pensji MAX
+  const handleMaxSalaryChange = (value: string) => {
+    const newMax = parseInt(value);
+    // Nie pozwól, aby MAX było mniejsze niż obecne MIN
     if (newMax >= salaryRange[0]) {
       updateSalaryRange([salaryRange[0], newMax]);
     }
   };
 
-  const getActiveFiltersCount = () => {
-    return (
-      workSchedule.length +
-      employmentType.length +
-      workStyle.length +
-      (salaryRange[0] !== 2500 || salaryRange[1] !== 15000 ? 1 : 0)
-    );
+  const toggleSection = (section: string) => {
+    setExpandedSections((prev) => ({ ...prev, [section]: !prev[section] }));
   };
 
+  const employmentTypeOptions = ["Full-time", "Part-time", "Project work"];
+  const workStyleOptions = ["Office", "Hybrid", "Remote"];
+
   return (
-    <div className="w-full max-w-xl bg-white rounded-2xl shadow-xl border border-gray-200 overflow-hidden">
+    <div className="flex flex-col bg-white h-full max-h-[80vh] overflow-y-auto shadow-xl rounded-2xl">
       {/* Header */}
-      <div className="sticky top-0 z-10 bg-gradient-to-r from-blue-50 to-blue-100 border-b border-blue-200 p-5">
-        <div className="flex items-center justify-between gap-3">
-          <div className="flex items-center gap-2">
-            <div className="w-2 h-2 bg-blue-600 rounded-full"></div>
-            <h2 className="text-lg font-bold text-gray-900">Filters</h2>
-            {getActiveFiltersCount() > 0 && (
-              <span className="ml-2 inline-flex items-center justify-center w-6 h-6 rounded-full bg-blue-600 text-white text-xs font-semibold">
-                {getActiveFiltersCount()}
-              </span>
-            )}
-          </div>
-          <button
-            onClick={resetFilters}
-            className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-white text-gray-700 hover:bg-gray-100 transition text-sm font-medium border border-gray-300"
-          >
-            <RotateCcw size={14} />
-            <span className="hidden sm:inline">Reset</span>
-          </button>
+      <div className="flex items-center justify-between p-5 border-b sticky top-0 bg-white z-10">
+        <div className="flex items-center gap-2">
+          <Zap className="w-5 h-5 text-orange-600 fill-orange-600" />
+          <h2 className="text-xl font-black text-slate-900 uppercase tracking-tight">Filtry</h2>
         </div>
+        <button
+          onClick={resetFilters}
+          className="flex items-center gap-2 text-sm font-bold text-slate-400 hover:text-orange-600 transition-colors group"
+        >
+          <RotateCcw size={16} className="group-hover:rotate-[-45deg] transition-transform" />
+          Resetuj
+        </button>
       </div>
 
-      {/* Scrollable Content */}
-      <div className="overflow-y-auto max-h-[calc(100vh-200px)] scrollbar-thin scrollbar-thumb-gray-300 scrollbar-track-gray-100">
-        {/* Work Schedule Section */}
-        <div className="border-b border-gray-100">
-          <button
-            onClick={() => toggleSection("schedule")}
-            className="w-full px-5 py-4 flex items-center justify-between hover:bg-gray-50 transition group"
-          >
-            <div className="flex items-center gap-3">
-              <Clock className="w-5 h-5 text-blue-600" />
-              <span className="font-semibold text-gray-900">Work schedule</span>
-            </div>
-            <ChevronDown
-              size={20}
-              className={`text-gray-500 transition-transform ${
-                expandedSections.schedule ? "rotate-180" : ""
-              }`}
-            />
-          </button>
-
-          {expandedSections.schedule && (
-            <div className="px-5 pb-4 space-y-3 bg-gray-50">
-              {workScheduleOptions.map((option) => (
-                <label
-                  key={option}
-                  className="flex items-center gap-3 cursor-pointer group"
-                >
-                  <input
-                    type="checkbox"
-                    checked={workSchedule.includes(option)}
-                    onChange={() => toggleWorkSchedule(option)}
-                    className="w-5 h-5 rounded border-2 border-gray-300 text-blue-600 cursor-pointer transition hover:border-blue-400 focus:ring-2 focus:ring-blue-500"
-                  />
-                  <span className="text-gray-700 font-medium group-hover:text-blue-600 transition">
-                    {option}
-                  </span>
-                </label>
-              ))}
-            </div>
-          )}
-        </div>
-
-        {/* Salary Range Section */}
-        <div className="border-b border-gray-100">
+      <div className="flex-1">
+        {/* Sekcja: Wynagrodzenie (Dwa suwaki) */}
+        <div className="border-b">
           <button
             onClick={() => toggleSection("salary")}
-            className="w-full px-5 py-4 flex items-center justify-between hover:bg-gray-50 transition group"
+            className="w-full p-5 flex items-center justify-between hover:bg-slate-50 transition group"
           >
-            <div className="flex items-center gap-3">
-              <Zap className="w-5 h-5 text-green-600" />
-              <div className="text-left">
-                <span className="font-semibold text-gray-900 block">Salary range</span>
-                <span className="text-xs text-gray-600">
-                  ${salaryRange[0].toLocaleString()} - $
-                  {salaryRange[1].toLocaleString()}
-                </span>
-              </div>
+            <div className="flex items-center gap-3 text-slate-700">
+              <Banknote className="w-5 h-5 text-orange-600" />
+              <span className="font-bold">Widełki płacowe (PLN)</span>
             </div>
             <ChevronDown
               size={20}
-              className={`text-gray-500 transition-transform ${
-                expandedSections.salary ? "rotate-180" : ""
-              }`}
+              className={`text-slate-400 transition-transform ${expandedSections.salary ? "rotate-180" : ""}`}
             />
           </button>
-
+          
           {expandedSections.salary && (
-            <div className="px-5 pb-5 space-y-4 bg-gray-50">
-              {/* Salary Chart */}
-              <div className="p-3 bg-white border border-blue-200 rounded-xl">
-                <div className="flex items-end justify-between h-32 gap-1">
-                  {salaryDistribution.map((item, index) => {
-                    const isInRange =
-                      item.salary >= salaryRange[0] &&
-                      item.salary <= salaryRange[1];
-                    const heightPercent = (item.count / maxCount) * 100;
-
-                    return (
-                      <div
-                        key={index}
-                        className="flex-1 flex flex-col items-center group relative"
-                      >
-                        <div
-                          className={`w-full rounded-t transition-all duration-200 ${
-                            isInRange
-                              ? "bg-gradient-to-t from-green-500 to-green-400 hover:from-green-600 hover:to-green-500"
-                              : "bg-gray-200 hover:bg-gray-300"
-                          }`}
-                          style={{ height: `${heightPercent}%` }}
-                        />
-                        <div className="absolute bottom-full mb-1 px-2 py-1 bg-gray-800 text-white text-xs rounded opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap pointer-events-none">
-                          ${item.salary.toLocaleString()}
-                        </div>
-                      </div>
-                    );
-                  })}
+            <div className="px-5 pb-8 space-y-6">
+              <div className="flex justify-between items-center gap-4">
+                <div className="flex-1">
+                  <label className="text-[10px] font-black text-slate-400 uppercase mb-1 block">Od</label>
+                  <div className="bg-slate-50 border border-slate-200 rounded-lg p-2 text-sm font-black text-slate-700">
+                    {salaryRange[0].toLocaleString()} zł
+                  </div>
                 </div>
-                <div className="flex justify-between text-xs text-gray-500 mt-2 px-1">
-                  <span>$2K</span>
-                  <span>$14K</span>
+                <div className="flex-1">
+                  <label className="text-[10px] font-black text-slate-400 uppercase mb-1 block">Do</label>
+                  <div className="bg-slate-50 border border-slate-200 rounded-lg p-2 text-sm font-black text-slate-700">
+                    {salaryRange[1].toLocaleString()} zł
+                  </div>
                 </div>
               </div>
 
-              {/* Range Sliders */}
-              <div className="space-y-3">
-                <div>
-                  <div className="flex justify-between items-center mb-2">
-                    <label className="text-xs font-semibold text-gray-700">
-                      Minimum
-                    </label>
-                    <span className="text-sm font-bold text-green-600">
-                      ${salaryRange[0].toLocaleString()}
-                    </span>
-                  </div>
+              <div className="space-y-4">
+                {/* Suwak MIN */}
+                <div className="relative">
                   <input
                     type="range"
-                    min="2500"
-                    max="15000"
+                    min="0"
+                    max={maxSalaryInDb}
                     step="500"
                     value={salaryRange[0]}
-                    onChange={handleSalaryMinChange}
-                    className="w-full h-2.5 bg-gray-200 rounded-lg appearance-none cursor-pointer accent-green-600"
+                    onChange={(e) => handleMinSalaryChange(e.target.value)}
+                    className="w-full h-1.5 bg-slate-100 rounded-lg appearance-none cursor-pointer accent-orange-600"
                   />
+                  <p className="text-[9px] text-slate-400 mt-1 font-bold uppercase tracking-tighter">Ustaw minimum</p>
                 </div>
 
-                <div>
-                  <div className="flex justify-between items-center mb-2">
-                    <label className="text-xs font-semibold text-gray-700">
-                      Maximum
-                    </label>
-                    <span className="text-sm font-bold text-green-600">
-                      ${salaryRange[1].toLocaleString()}
-                    </span>
-                  </div>
+                {/* Suwak MAX */}
+                <div className="relative">
                   <input
                     type="range"
-                    min="2500"
-                    max="15000"
+                    min="0"
+                    max={maxSalaryInDb}
                     step="500"
                     value={salaryRange[1]}
-                    onChange={handleSalaryMaxChange}
-                    className="w-full h-2.5 bg-gray-200 rounded-lg appearance-none cursor-pointer accent-green-600"
+                    onChange={(e) => handleMaxSalaryChange(e.target.value)}
+                    className="w-full h-1.5 bg-slate-100 rounded-lg appearance-none cursor-pointer accent-orange-600"
                   />
+                  <p className="text-[9px] text-slate-400 mt-1 font-bold uppercase tracking-tighter">Ustaw maksimum</p>
                 </div>
               </div>
             </div>
           )}
         </div>
 
-        {/* Employment Type Section */}
-        <div className="border-b border-gray-100">
+        {/* Sekcja: Typ umowy */}
+        <div className="border-b">
           <button
             onClick={() => toggleSection("employment")}
-            className="w-full px-5 py-4 flex items-center justify-between hover:bg-gray-50 transition group"
+            className="w-full p-5 flex items-center justify-between hover:bg-slate-50 transition group"
           >
-            <div className="flex items-center gap-3">
-              <Briefcase className="w-5 h-5 text-purple-600" />
-              <span className="font-semibold text-gray-900">Employment type</span>
+            <div className="flex items-center gap-3 text-slate-700">
+              <Briefcase className="w-5 h-5 text-orange-600" />
+              <span className="font-bold">Typ umowy</span>
             </div>
             <ChevronDown
               size={20}
-              className={`text-gray-500 transition-transform ${
-                expandedSections.employment ? "rotate-180" : ""
-              }`}
+              className={`text-slate-400 transition-transform ${expandedSections.employment ? "rotate-180" : ""}`}
             />
           </button>
 
           {expandedSections.employment && (
-            <div className="px-5 pb-4 space-y-3 bg-gray-50">
+            <div className="px-5 pb-4 grid grid-cols-1 gap-2">
               {employmentTypeOptions.map((option) => (
-                <label
-                  key={option}
-                  className="flex items-center gap-3 cursor-pointer group"
-                >
+                <label key={option} className="flex items-center justify-between p-3 rounded-xl border border-slate-100 hover:border-orange-200 hover:bg-orange-50/30 cursor-pointer transition group">
+                  <span className="text-sm font-bold text-slate-600 group-hover:text-orange-700">{option}</span>
                   <input
                     type="checkbox"
                     checked={employmentType.includes(option)}
                     onChange={() => toggleEmploymentType(option)}
-                    className="w-5 h-5 rounded border-2 border-gray-300 text-purple-600 cursor-pointer transition hover:border-purple-400 focus:ring-2 focus:ring-purple-500"
+                    className="w-5 h-5 rounded-lg border-2 border-slate-300 text-orange-600 cursor-pointer focus:ring-orange-500"
                   />
-                  <span className="text-gray-700 font-medium group-hover:text-purple-600 transition">
-                    {option}
-                  </span>
                 </label>
               ))}
             </div>
           )}
         </div>
 
-        {/* Work Style Section */}
-        <div>
+        {/* Sekcja: Tryb pracy */}
+        <div className="border">
           <button
             onClick={() => toggleSection("style")}
-            className="w-full px-5 py-4 flex items-center justify-between hover:bg-gray-50 transition group"
+            className="w-full p-5 flex items-center justify-between hover:bg-slate-50 transition group"
           >
-            <div className="flex items-center gap-3">
+            <div className="flex items-center gap-3 text-slate-700">
               <Globe className="w-5 h-5 text-orange-600" />
-              <span className="font-semibold text-gray-900">Work style</span>
+              <span className="font-bold">Tryb pracy</span>
             </div>
             <ChevronDown
               size={20}
-              className={`text-gray-500 transition-transform ${
-                expandedSections.style ? "rotate-180" : ""
-              }`}
+              className={`text-slate-400 transition-transform ${expandedSections.style ? "rotate-180" : ""}`}
             />
           </button>
 
           {expandedSections.style && (
-            <div className="px-5 pb-4 space-y-3 bg-gray-50">
+            <div className="px-5 pb-4 grid grid-cols-1 gap-2">
               {workStyleOptions.map((option) => (
-                <label
-                  key={option}
-                  className="flex items-center gap-3 cursor-pointer group"
-                >
+                <label key={option} className="flex items-center justify-between p-3 rounded-xl border border-slate-100 hover:border-orange-200 hover:bg-orange-50/30 cursor-pointer transition group">
+                  <span className="text-sm font-bold text-slate-600 group-hover:text-orange-700">{option}</span>
                   <input
                     type="checkbox"
                     checked={workStyle.includes(option)}
                     onChange={() => toggleWorkStyle(option)}
-                    className="w-5 h-5 rounded border-2 border-gray-300 text-orange-600 cursor-pointer transition hover:border-orange-400 focus:ring-2 focus:ring-orange-500"
+                    className="w-5 h-5 rounded-lg border-2 border-slate-300 text-orange-600 cursor-pointer focus:ring-orange-500"
                   />
-                  <span className="text-gray-700 font-medium group-hover:text-orange-600 transition">
-                    {option}
-                  </span>
                 </label>
               ))}
             </div>
