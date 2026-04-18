@@ -1,8 +1,8 @@
 import React, { useState } from "react";
-import { Briefcase, Menu as MenuIcon, X, TrendingUp, CheckCircle, Calculator } from "lucide-react";
+import { Briefcase, Menu as MenuIcon, X, TrendingUp, CheckCircle, Calculator, Newspaper } from "lucide-react";
 
 interface MenuProps {
-  onNavigate?: (page: "jobs" | "career" | "home" | "salary-calculator") => void;
+  onNavigate?: (page: "contract-analyzer" | "cv-creator" | "jobs" | "career" | "salary-calculator" | "home") => void;
   isExpanded: boolean;
   onToggleMenu: () => void;
 }
@@ -37,8 +37,15 @@ export const Menu: React.FC<MenuProps> = ({ onNavigate, isExpanded, onToggleMenu
             label: "Sprawdź zgodność formularza",
             icon: CheckCircle,
             description: "Walidacja i weryfikacja danych",
-            page: "home" as const,
+            page: "contract-analyzer" as const,
         },
+        {
+            id: "cv-creator",
+            label: "Kreator CV",
+            icon: Newspaper,
+            description: "Stwóż swoje pierwsze CV",
+            page: "cv-creator" as const,
+        }
     ];
 
     const handleMenuItemClick = (item: typeof menuItems[0]) => {
