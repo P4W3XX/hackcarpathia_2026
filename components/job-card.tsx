@@ -1,56 +1,46 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 "use client";
 
 import React, { useState } from "react";
-import { JobOffer } from "@/app/types";
 import { Heart, MapPin, Clock } from "lucide-react";
 import Image from "next/image";
 import { JobModal } from "./job-modal";
 
-interface JobCardProps {
-  job: JobOffer;
+interface JobOfferDB {
+  id: string;
+  title: string;
+  company: string;
+  salary_gross: number;
+  location: string;
+  posted_date: string;
+  applicants_count: number;
+  employment_type: string;
+  work_style: string;
+  experience_level: string;
+  bg_color: string;
+  logo_url?: string;
 }
 
-const colorClasses: Record<string, string> = {
-  purple: "bg-purple-100",
-  blue: "bg-blue-100",
-  lime: "bg-lime-100",
-  pink: "bg-pink-100",
-  gray: "bg-gray-100",
-  indigo: "bg-indigo-100",
-};
-
-const colorBorders: Record<string, string> = {
-  purple: "border-purple-300",
-  blue: "border-blue-300",
-  lime: "border-lime-300",
-  pink: "border-pink-300",
-  gray: "border-gray-300",
-  indigo: "border-indigo-300",
-};
-
-const textColorClasses: Record<string, string> = {
-  purple: "text-purple-700",
-  blue: "text-blue-700",
-  lime: "text-lime-700",
-  pink: "text-pink-700",
-  gray: "text-gray-700",
-  indigo: "text-indigo-700",
-};
+interface JobCardProps {
+  job: JobOfferDB;
+}
 
 export const JobCard: React.FC<JobCardProps> = ({ job }) => {
   const [isFavorite, setIsFavorite] = useState(false);
   const [isAnimating, setIsAnimating] = useState(false);
   const [isModalOpen, setIsModalOpen] = useState(false);
 
-  const colorClass = colorClasses[job.color] || colorClasses.blue;
-  const colorBorder = colorBorders[job.color] || colorBorders.blue;
-  const textColor = textColorClasses[job.color] || textColorClasses.blue;
-
-  const handleLikeClick = () => {
+  const handleLikeClick = (e: React.MouseEvent) => {
+    e.stopPropagation();
     setIsFavorite(!isFavorite);
     setIsAnimating(true);
     setTimeout(() => setIsAnimating(false), 600);
   };
+
+  const formattedDate = new Date(job.posted_date).toLocaleDateString("en-GB", {
+    day: "numeric",
+    month: "long",
+  });
 
   return (
     <>
@@ -72,7 +62,6 @@ export const JobCard: React.FC<JobCardProps> = ({ job }) => {
             transform: scale(1);
           }
         }
-
         @keyframes pulse-ring {
           0% {
             box-shadow: 0 0 0 0 rgba(239, 68, 68, 0.7);
@@ -84,101 +73,109 @@ export const JobCard: React.FC<JobCardProps> = ({ job }) => {
             box-shadow: 0 0 0 0 rgba(239, 68, 68, 0);
           }
         }
-
         .heart-animate {
           animation: heartBeat 0.6s ease-in-out;
         }
-
         .pulse-animate {
           animation: pulse-ring 0.6s ease-out;
         }
       `}</style>
 
       <div
-        className={`bg-gradient-to-br ${colorClass} border-2 ${colorBorder} rounded-3xl p-6 hover:shadow-xl transition-all duration-300 slide-in w-[20rem] cursor-pointer`}
+        className={`relative ${job.bg_color} border border-black/5 rounded-[32px] p-6 hover:shadow-2xl transition-all duration-500 w-full max-w-[340px] cursor-pointer group flex flex-col justify-between h-full`}
         onClick={() => setIsModalOpen(true)}
       >
+        <div>
+          {/* Salary */}
+          <div className="text-sm font-bold text-slate-500 mb-2">
+            {job.salary_gross.toLocaleString()} zł / month
+          </div>
 
+          {/* Title and Company */}
+          <div className="flex justify-between items-start gap-4 mb-4">
+            <div className="flex flex-col flex-1">
+              <h3 className="text-xl font-black text-slate-900 leading-tight group-hover:text-blue-600 transition-colors">
+                {job.title}
+              </h3>
+              <p className="font-bold text-slate-600 opacity-80 mt-1">
+                {job.company}
+              </p>
+            </div>
+            <div className="bg-white p-2 rounded-2xl shadow-sm">
+              <Image
+                src={job.logo_url || "/default-logo.png"}
+                alt={`${job.company} logo`}
+                width={40}
+                height={40}
+                className="w-10 h-10 rounded-lg object-contain"
+              />
+            </div>
+          </div>
 
-      {/* Salary */}
-      <div className={`text-md font-medium text-zinc-600 mb-2`}>
-        {job.salary.min.toLocaleString()}zł /month
-      </div>
+          {/* Location */}
+          <div className="flex items-center gap-2 mb-3 text-slate-600 font-medium">
+            <MapPin size={16} className="text-slate-400" />
+            <span className="text-sm">{job.location}</span>
+          </div>
 
-      {/* Title and Company */}
-      <div className="flex flex-row items-center justify-between gap-4 mb-4">
-      <div className="flex flex-col">
-         <h3 className={`text-xl font-semibold`}>{job.title}</h3>
-      <p className={`font-semibold  mb-1 opacity-75`}>
-        {job.company}
-      </p>
-      </div>
-       <Image src={job.logo || "/default-logo.png"} alt={`${job.company} logo`} width={40} height={40} className="w-10 h-10 rounded-lg object-cover" />
+          {/* Date and Applicants */}
+          <div className="flex items-center justify-between text-xs text-slate-500 mb-6 pb-4 border-b border-black/10">
+            <div className="flex items-center gap-1.5 font-bold">
+              <Clock size={14} />
+              {formattedDate}
+            </div>
+            <div className="font-bold">{job.applicants_count} applicants</div>
+          </div>
+
+          {/* Tags */}
+          <div className="flex flex-wrap gap-2 mb-8">
+            {[job.employment_type, job.work_style, job.experience_level].map(
+              (tag) => (
+                <span
+                  key={tag}
+                  className="px-4 py-1.5 rounded-full text-[11px] font-black uppercase tracking-wider bg-white/50 border border-black/5 text-slate-700"
+                >
+                  {tag}
+                </span>
+              ),
+            )}
+          </div>
         </div>
 
-      {/* Location */}
-      <div className="flex items-center gap-2 mb-2 text-gray-700">
-        <MapPin className="w-4 h-4" />
-        <span className="text-sm">{job.location}</span>
-      </div>
-
-      {/* Date and Applicants */}
-      <div className="flex items-center justify-between text-sm text-gray-600 mb-4 pb-4 border-b border-current border-opacity-20">
-        <span className="flex items-center gap-1">
-          <Clock className="w-4 h-4" />
-          {job.date}
-        </span>
-        <span>{job.applicants} applicants</span>
-      </div>
-
-      {/* Tags */}
-      <div className="flex flex-wrap gap-2 mb-6">
-        {job.tags.map((tag) => (
-          <span
-            key={tag}
-            className={`px-3 py-1 rounded-full text-xs font-semibold  border-gray-300 border-1`}
+        {/* Action Buttons */}
+        <div className="flex items-center gap-3 mt-auto">
+          <button
+            className="flex-1 bg-slate-900 text-white py-3.5 rounded-2xl font-black text-sm hover:bg-black hover:scale-[1.02] transition-all duration-300 shadow-lg shadow-slate-200"
+            onClick={(e) => {
+              e.stopPropagation();
+            }}
           >
-            {tag}
-          </span>
-        ))}
+            Apply now
+          </button>
+
+          <button
+            onClick={handleLikeClick}
+            className={`p-3.5 rounded-2xl transition-all duration-300 border ${
+              isFavorite
+                ? "bg-red-500 border-red-500 text-white shadow-lg shadow-red-200"
+                : "bg-white border-black/5 text-slate-400 hover:text-red-500 hover:border-red-200"
+            } ${isAnimating ? "heart-animate" : ""} ${isFavorite && isAnimating ? "pulse-animate" : ""}`}
+          >
+            <Heart
+              size={20}
+              fill={isFavorite ? "currentColor" : "none"}
+              strokeWidth={isFavorite ? 0 : 2.5}
+            />
+          </button>
+        </div>
       </div>
 
-      {/* Buttons */}
-      <div className="flex flex-row gap-3 items-center">
-        <button
-          onClick={(e) => e.stopPropagation()}
-          className={`flex-1 text-sm text-normal py-2 rounded-xl hover:opacity-80 transition-opacity duration-300 border-black border-2 bg-slate-900 text-white`}
-        >
-          Apply now
-        </button>
-              {/* Header with Logo and Favorite */}
-   
-        <button
-          onClick={(e) => {
-            e.stopPropagation();
-            handleLikeClick();
-          }}
-          className={`p-2 rounded-full transition-all duration-300 ${
-            isFavorite
-              ? "bg-red-500 text-white"
-              : `${colorClass} ${textColor} hover:${colorClass}`
-          } ${isAnimating ? "heart-animate" : ""} ${isFavorite && isAnimating ? "pulse-animate" : ""}`}
-        >
-          <Heart
-            className="w-5 h-5"
-            fill={isFavorite ? "currentColor" : "none"}
-          />
-        </button>
-      </div>
-      </div>
-
-      {/* Job Modal */}
       <JobModal
-        job={job}
+        job={job as any}
         isOpen={isModalOpen}
         onCloseAction={() => setIsModalOpen(false)}
         isFavorite={isFavorite}
-        onFavoriteClickAction={handleLikeClick}
+        onFavoriteClickAction={() => setIsFavorite(!isFavorite)}
       />
     </>
   );
