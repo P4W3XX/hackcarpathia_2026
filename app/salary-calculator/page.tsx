@@ -16,35 +16,10 @@ import {
 import { useUserStore } from "@/store/user";
 import { createClient } from "@/lib/supabase/client";
 
-const DATA = {
-  cities: {
-    Warszawa: {
-      rentApartment: 5250,
-      rentStudio: 3500,
-      rentRoom: 1800,
-      transport: 180,
-      foodBase: 1200,
-    },
-    Rzeszów: {
-      rentApartment: 4500,
-      rentStudio: 2200,
-      rentRoom: 1200,
-      transport: 100,
-      foodBase: 900,
-    },
-    Kraków: {
-      rentApartment: 5000,
-      rentStudio: 3000,
-      rentRoom: 1600,
-      transport: 160,
-      foodBase: 1100,
-    },
-  },
-  lifestyles: {
-    "Student (Przetrwanie)": 0.6,
-    "Normalny człowiek": 1.0,
-    "Żymianin ✡️ (Premium)": 1.8,
-  },
+const LIFESTYLES: Record<string, number> = {
+  "Student (Przetrwanie)": 0.6,
+  "Normalny człowiek": 1.0,
+  "Karierowicz (Premium)": 1.8,
 };
 
 export default function JobFinderSalaryDashboard() {
@@ -52,20 +27,18 @@ export default function JobFinderSalaryDashboard() {
   const supabase = createClient();
 
   const [isMounted, setIsMounted] = useState(false);
+  const [cityData, setCityData] = useState<any[]>([]);
   const [netSalary, setNetSalary] = useState(0);
+  const [city, setCity] = useState("Warszawa");
+  const [housing, setHousing] = useState("rentStudio");
+  const [lifestyle, setLifestyle] = useState("Normalny człowiek");
+
   const [goals, setGoals] = useState<any[]>([]);
   const [selectedGoalId, setSelectedGoalId] = useState<string>("");
 
-  // State dla nowego celu
   const [newGoalTitle, setNewGoalTitle] = useState("");
   const [newGoalPrice, setNewGoalPrice] = useState("");
   const [isAdding, setIsAdding] = useState(false);
-
-  const [city, setCity] = useState(Object.keys(DATA.cities)[0]);
-  const [housing, setHousing] = useState<
-    "rentStudio" | "rentRoom" | "rentApartment"
-  >("rentStudio");
-  const [lifestyle, setLifestyle] = useState("Normalny człowiek");
 
   useEffect(() => {
     // eslint-disable-next-line react-hooks/set-state-in-effect
@@ -73,7 +46,10 @@ export default function JobFinderSalaryDashboard() {
   }, []);
 
   useEffect(() => {
-    const fetchData = async () => {
+    const initData = async () => {
+      const { data: cities } = await supabase.from("city_costs").select("*");
+      if (cities) setCityData(cities);
+
       const {
         data: { user: authUser },
       } = await supabase.auth.getUser();
@@ -81,7 +57,7 @@ export default function JobFinderSalaryDashboard() {
 
       const { data: profile } = await supabase
         .from("profiles")
-        .select("full_name, salary")
+        .select("full_name, salary, city_name, housing_type, lifestyle_type")
         .eq("id", authUser.id)
         .single();
 
@@ -93,24 +69,33 @@ export default function JobFinderSalaryDashboard() {
           salary: profile.salary,
         });
         setNetSalary(profile.salary || 0);
+        setCity(profile.city_name || "Warszawa");
+        setHousing(profile.housing_type || "rentStudio");
+        setLifestyle(profile.lifestyle_type || "Normalny człowiek");
       }
 
-      // 2. Pobierz cele
       const { data: userGoals } = await supabase
         .from("goals")
         .select("*")
         .order("created_at", { ascending: false });
-
       if (userGoals) {
         setGoals(userGoals);
         if (userGoals.length > 0) setSelectedGoalId(userGoals[0].id);
       }
     };
 
-    if (isMounted) fetchData();
+    if (isMounted) initData();
   }, [isMounted, supabase, setUser]);
 
-  // Funkcja dodawania celu
+  const updateProfile = async (updates: any) => {
+    if (!user) return;
+    const { error } = await supabase
+      .from("profiles")
+      .update(updates)
+      .eq("id", user.id);
+    if (error) console.error("Błąd aktualizacji profilu:", error.message);
+  };
+
   const addGoal = async () => {
     if (!newGoalTitle || !newGoalPrice || !user) return;
     setIsAdding(true);
@@ -142,14 +127,16 @@ export default function JobFinderSalaryDashboard() {
     }
   };
 
-  // Kalkulacje
   const calculation = useMemo(() => {
-    const cityData = DATA.cities[city as keyof typeof DATA.cities];
-    const rent = cityData[housing as keyof typeof cityData];
+    const currentCity =
+      cityData.find((c) => c.city_name === city) || cityData[0];
+    if (!currentCity) return null;
+
+    const rent = Number(currentCity[housing]) || 0;
     const foodAndLife =
-      cityData.foodBase *
-      (DATA.lifestyles[lifestyle as keyof typeof DATA.lifestyles] || 1);
-    const totalCosts = rent + foodAndLife + cityData.transport;
+      (Number(currentCity.food_base) || 0) * (LIFESTYLES[lifestyle] || 1);
+    const transport = Number(currentCity.transport_cost) || 0;
+    const totalCosts = rent + foodAndLife + transport;
     const balance = netSalary - totalCosts;
 
     const selectedGoal = goals.find((g) => g.id === selectedGoalId);
@@ -161,35 +148,42 @@ export default function JobFinderSalaryDashboard() {
     return {
       rent,
       foodAndLife,
-      transport: cityData.transport,
+      transport,
       balance,
       monthsToGoal,
       selectedGoal,
     };
-  }, [netSalary, city, housing, lifestyle, goals, selectedGoalId]);
+  }, [netSalary, city, housing, lifestyle, goals, selectedGoalId, cityData]);
 
-  if (!isMounted) return null;
+  if (!isMounted || !calculation) return null;
 
   return (
     <div className="min-h-screen bg-[#F8F9FD] text-slate-800 font-sans flex w-full">
       <aside className="w-72 bg-white border-r border-slate-200 p-8 flex flex-col gap-8 hidden lg:flex">
-        <div className="flex items-center gap-2 text-indigo-600 font-bold text-xl">
+        <div className="flex items-center gap-2 text-indigo-600 font-bold text-xl mb-4">
           <Briefcase size={28} />
           <span>PayCheck.io</span>
         </div>
+
         <nav className="space-y-6">
           <FilterSelect
             label="Lokalizacja"
             icon={<MapPin size={14} />}
             value={city}
-            onChange={setCity}
-            options={Object.keys(DATA.cities)}
+            onChange={(val: React.SetStateAction<string>) => {
+              setCity(val);
+              updateProfile({ city_name: val });
+            }}
+            options={cityData.map((c) => c.city_name)}
           />
           <FilterSelect
             label="Rodzaj lokum"
             icon={<Home size={14} />}
             value={housing}
-            onChange={setHousing}
+            onChange={(val: React.SetStateAction<string>) => {
+              setHousing(val);
+              updateProfile({ housing_type: val });
+            }}
             options={["rentRoom", "rentStudio", "rentApartment"]}
             labels={{
               rentRoom: "Pokój",
@@ -201,8 +195,11 @@ export default function JobFinderSalaryDashboard() {
             label="Styl życia"
             icon={<Coffee size={14} />}
             value={lifestyle}
-            onChange={setLifestyle}
-            options={Object.keys(DATA.lifestyles)}
+            onChange={(val: React.SetStateAction<string>) => {
+              setLifestyle(val);
+              updateProfile({ lifestyle_type: val });
+            }}
+            options={Object.keys(LIFESTYLES)}
           />
         </nav>
       </aside>
@@ -213,9 +210,7 @@ export default function JobFinderSalaryDashboard() {
             <h1 className="text-2xl font-bold tracking-tight">
               Cześć, {user?.name || "Użytkowniku"} 👋
             </h1>
-            <p className="text-slate-500 text-sm">
-              Twoja analiza finansowa,
-            </p>
+            <p className="text-slate-500 text-sm">Twoja analiza finansowa,</p>
           </div>
         </header>
 
@@ -253,8 +248,7 @@ export default function JobFinderSalaryDashboard() {
 
         <div className="bg-white p-6 mb-8 rounded-[24px] shadow-sm border border-slate-100 flex flex-col">
           <h3 className="font-semibold mb-6 flex items-center gap-2">
-            <TrendingDown size={20} className="text-red-500" /> Wykaz
-            kosztów
+            <TrendingDown size={20} className="text-red-500" /> Wykaz kosztów
           </h3>
 
           <div className="space-y-4 flex-1">
@@ -279,7 +273,8 @@ export default function JobFinderSalaryDashboard() {
             <div className="flex justify-between items-center p-3 bg-slate-50 rounded-xl">
               <div className="flex flex-col">
                 <span className="text-xs font-bold text-slate-400 uppercase">
-                  Przewidywane tryb wydawania pieniędzy na jedzenie i podstawowe przedmioty
+                  Przewidywane tryb wydawania pieniędzy na jedzenie i podstawowe
+                  przedmioty
                 </span>
                 <span className="font-semibold text-slate-700">
                   {lifestyle}
