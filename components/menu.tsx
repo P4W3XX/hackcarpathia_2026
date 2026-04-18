@@ -1,8 +1,8 @@
 import React, { useState } from "react";
-import { Briefcase, Menu as MenuIcon, X, TrendingUp, CheckCircle } from "lucide-react";
+import { Briefcase, Menu as MenuIcon, X, TrendingUp, CheckCircle, Calculator } from "lucide-react";
 
 interface MenuProps {
-  onNavigate?: (page: "jobs" | "career" | "home") => void;
+  onNavigate?: (page: "jobs" | "career" | "home" | "salary-calculator") => void;
   isExpanded: boolean;
   onToggleMenu: () => void;
 }
@@ -11,6 +11,13 @@ export const Menu: React.FC<MenuProps> = ({ onNavigate, isExpanded, onToggleMenu
     const [activeItem, setActiveItem] = useState<string | null>(null);
 
     const menuItems = [
+                {
+            id: "salary-calculator",
+            label: "Kalkulator wynagrodzeń",
+            icon: Calculator,
+            description: "Oblicz swoje potencjalne zarobki",
+            page: "salary-calculator" as const,
+        },
         {
             id: "jobs",
             label: "Oferty pracy",
@@ -51,7 +58,7 @@ export const Menu: React.FC<MenuProps> = ({ onNavigate, isExpanded, onToggleMenu
             <div className="flex items-center justify-between p-6 border-b border-slate-700">
                 {isExpanded && (
                     <h1 className="text-2xl font-bold bg-gradient-to-r from-blue-400 to-cyan-400 bg-clip-text text-transparent">
-                        JobFinder
+                        SmartStart+
                     </h1>
                 )}
                 <button

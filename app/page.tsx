@@ -7,6 +7,7 @@ import { CareerProgress } from "@/components/career-progress";
 import { careerLevels } from "./data/jobs";
 import { careerPaths } from "./data/careers";
 import { UserProgress, CareerPath } from "./types";
+import JobFinderSalaryDashboard from "./salary-calculator/page";
 import { CareerAiPath } from "@/components/career-path";
 
 // Static user progress data
@@ -49,9 +50,7 @@ const calculateCurrentLevel = (
 };
 
 export default function Home() {
-  const [currentPage, setCurrentPage] = useState<"home" | "jobs" | "career">(
-    "jobs",
-  );
+  const [currentPage, setCurrentPage] = useState<"home" | "jobs" | "career" | "salary-calculator">("salary-calculator");
   const [isMenuExpanded, setIsMenuExpanded] = useState(true);
   const [selectedCareerPath, setSelectedCareerPath] =
     useState<CareerPath | null>(null);
@@ -172,7 +171,7 @@ export default function Home() {
         {currentPage === "jobs" && <JobsPage />}
 
         {currentPage === "career" && (
-          <div className="animate-in fade-in duration-500">
+          <div className="animate-in fade-in duration-500 mt-8">
             <div className="text-center mb-12">
               <h1 className="text-4xl font-black text-slate-900 mb-4">
                 Twoja Ścieżka Awansu
@@ -236,6 +235,10 @@ export default function Home() {
               </div>
             </div>
           </div>
+        )}
+
+        {currentPage === "salary-calculator" && (
+         <JobFinderSalaryDashboard/>
         )}
       </div>
     </main>

@@ -34,7 +34,7 @@ export const CareerAiPath = () => {
   };
 
   return (
-    <div className="max-w-4xl mx-auto p-6">
+    <div className="max-w-4xl mx-auto p-6 ">
       <div className="bg-white rounded-[32px] p-8 shadow-sm border border-slate-100 mb-8">
         <div className="flex items-center gap-3 mb-6">
           <div className="p-3 bg-indigo-100 rounded-2xl text-indigo-600">
