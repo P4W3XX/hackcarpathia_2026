@@ -1,8 +1,8 @@
 import React, { useState } from "react";
-import { Briefcase, Menu as MenuIcon, X, TrendingUp, CheckCircle, Calculator } from "lucide-react";
+import { Briefcase, Menu as MenuIcon, X, TrendingUp, CheckCircle, Calculator, Receipt, Stethoscope } from "lucide-react";
 
 interface MenuProps {
-  onNavigate?: (page: "jobs" | "career" | "home" | "salary-calculator") => void;
+  onNavigate?: (page: "jobs" | "career" | "home" | "salary-calculator" | "taxes" | "doctors") => void;
   isExpanded: boolean;
   onToggleMenu: () => void;
 }
@@ -31,6 +31,20 @@ export const Menu: React.FC<MenuProps> = ({ onNavigate, isExpanded, onToggleMenu
             icon: TrendingUp,
             description: "Wymagania do awansu i wyższych zarobków",
             page: "career" as const,
+        },
+        {
+            id: "taxes",
+            label: "Podatki i terminy",
+            icon: Receipt,
+            description: "Instrukcje odprowadzania podatków",
+            page: "taxes" as const,
+        },
+        {
+            id: "doctors",
+            label: "Wizyty u lekarza",
+            icon: Stethoscope,
+            description: "Planuj wizyty i monitoruj zdrowie",
+            page: "doctors" as const,
         },
         {
             id: "form",
