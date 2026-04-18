@@ -211,59 +211,7 @@ export default function Sidebar() {
           })}
         </div>
       </div>
-      {isMounted && (
-        <DropdownMenu open={isDropdownOpen} onOpenChange={setIsDropdownOpen}>
-          <DropdownMenuTrigger asChild>
-            <div className="relative flex cursor-pointer items-center space-x-2 rounded-2xl p-2 hover:bg-accent/60">
-              <div className="relative flex size-9 items-center justify-center rounded-lg bg-zinc-300 font-medium text-white flex-shrink-0">
-                <span className="z-10">
-                  {user?.name
-                    ?.split(" ")
-                    .map((word) => word.charAt(0))
-                    .join("")
-                    .toUpperCase()}
-                </span>
-                <div className="absolute h-full w-full rounded-lg bg-linear-0 from-black/30" />
-              </div>
-              <span className="hidden lg:inline text-base font-medium">
-                {user?.name || "User"}
-              </span>
-              <ChevronUp
-                className={`${isDropdownOpen ? "rotate-180" : ""} hidden lg:inline absolute right-2 transition-transform`}
-              />
-            </div>
-          </DropdownMenuTrigger>
-        <DropdownMenuContent
-          align="center"
-          side="top"
-          sideOffset={10}
-          className="w-74"
-        >
-          <DropdownMenuGroup>
-            <DropdownMenuItem onClick={() => router.push("/exchange")}>
-              <ShoppingBagIcon />
-              Wymień punkty eko
-            </DropdownMenuItem>
-            <DropdownMenuItem onClick={() => router.push("/bills")}>
-              <BanknoteIcon />
-              Twoje rachunki
-            </DropdownMenuItem>
-            <DropdownMenuSeparator />
-            <DropdownMenuItem onClick={() => router.push("/settings")}>
-              <SettingsIcon />
-              Ustawienia
-            </DropdownMenuItem>
-          </DropdownMenuGroup>
-          <DropdownMenuSeparator />
-          <DropdownMenuGroup>
-            <DropdownMenuItem onClick={handleLogout} variant="destructive">
-              <LogOutIcon />
-              Wyloguj
-            </DropdownMenuItem>
-          </DropdownMenuGroup>
-        </DropdownMenuContent>
-      </DropdownMenu>
-      )}
+      
     </main>
     </>
   )
