@@ -4,6 +4,7 @@ import React, { useState } from "react";
 import { JobOffer } from "@/app/types";
 import { Heart, MapPin, Clock } from "lucide-react";
 import Image from "next/image";
+import { JobModal } from "./job-modal";
 
 interface JobCardProps {
   job: JobOffer;
@@ -38,20 +39,70 @@ const textColorClasses: Record<string, string> = {
 
 export const JobCard: React.FC<JobCardProps> = ({ job }) => {
   const [isFavorite, setIsFavorite] = useState(false);
+  const [isAnimating, setIsAnimating] = useState(false);
+  const [isModalOpen, setIsModalOpen] = useState(false);
 
   const colorClass = colorClasses[job.color] || colorClasses.blue;
   const colorBorder = colorBorders[job.color] || colorBorders.blue;
   const textColor = textColorClasses[job.color] || textColorClasses.blue;
 
+  const handleLikeClick = () => {
+    setIsFavorite(!isFavorite);
+    setIsAnimating(true);
+    setTimeout(() => setIsAnimating(false), 600);
+  };
+
   return (
-    <div
-      className={`bg-gradient-to-br ${colorClass} border-2 ${colorBorder} rounded-3xl p-6 hover:shadow-xl transition-all duration-300 slide-in w-[20rem]`}
-    >
+    <>
+      <style jsx>{`
+        @keyframes heartBeat {
+          0% {
+            transform: scale(1);
+          }
+          25% {
+            transform: scale(1.3);
+          }
+          50% {
+            transform: scale(1.1);
+          }
+          75% {
+            transform: scale(1.25);
+          }
+          100% {
+            transform: scale(1);
+          }
+        }
+
+        @keyframes pulse-ring {
+          0% {
+            box-shadow: 0 0 0 0 rgba(239, 68, 68, 0.7);
+          }
+          70% {
+            box-shadow: 0 0 0 15px rgba(239, 68, 68, 0);
+          }
+          100% {
+            box-shadow: 0 0 0 0 rgba(239, 68, 68, 0);
+          }
+        }
+
+        .heart-animate {
+          animation: heartBeat 0.6s ease-in-out;
+        }
+
+        .pulse-animate {
+          animation: pulse-ring 0.6s ease-out;
+        }
+      `}</style>
+
+      <div
+        className={`bg-gradient-to-br ${colorClass} border-2 ${colorBorder} rounded-3xl p-6 hover:shadow-xl transition-all duration-300 slide-in w-[20rem] cursor-pointer`}
+        onClick={() => setIsModalOpen(true)}
+      >
 
 
       {/* Salary */}
-      <div className={`text-xl font-thin mb-2`}>
-        ${job.salary.min.toLocaleString()}/month
+      <div className={`text-md font-medium text-zinc-600 mb-2`}>
+        {job.salary.min.toLocaleString()}zł /month
       </div>
 
       {/* Title and Company */}
@@ -95,6 +146,7 @@ export const JobCard: React.FC<JobCardProps> = ({ job }) => {
       {/* Buttons */}
       <div className="flex flex-row gap-3 items-center">
         <button
+          onClick={(e) => e.stopPropagation()}
           className={`flex-1 text-sm text-normal py-2 rounded-xl hover:opacity-80 transition-opacity duration-300 border-black border-2 bg-slate-900 text-white`}
         >
           Apply now
@@ -102,12 +154,15 @@ export const JobCard: React.FC<JobCardProps> = ({ job }) => {
               {/* Header with Logo and Favorite */}
    
         <button
-          onClick={() => setIsFavorite(!isFavorite)}
+          onClick={(e) => {
+            e.stopPropagation();
+            handleLikeClick();
+          }}
           className={`p-2 rounded-full transition-all duration-300 ${
             isFavorite
               ? "bg-red-500 text-white"
               : `${colorClass} ${textColor} hover:${colorClass}`
-          }`}
+          } ${isAnimating ? "heart-animate" : ""} ${isFavorite && isAnimating ? "pulse-animate" : ""}`}
         >
           <Heart
             className="w-5 h-5"
@@ -116,6 +171,15 @@ export const JobCard: React.FC<JobCardProps> = ({ job }) => {
         </button>
       </div>
       </div>
-   
+
+      {/* Job Modal */}
+      <JobModal
+        job={job}
+        isOpen={isModalOpen}
+        onCloseAction={() => setIsModalOpen(false)}
+        isFavorite={isFavorite}
+        onFavoriteClickAction={handleLikeClick}
+      />
+    </>
   );
 };
