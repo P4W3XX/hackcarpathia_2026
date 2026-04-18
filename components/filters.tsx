@@ -115,50 +115,19 @@ export const Filters: React.FC = () => {
           </button>
           
           {expandedSections.salary && (
-            <div className="px-5 pb-5 space-y-4 bg-gray-50">
-              {/* Salary Chart Header */}
-              <div className="flex items-center justify-between text-sm">
-                <span className="font-semibold text-gray-900">Distribution</span>
-                <span className="text-green-600 font-bold">
-                  {jobOffers.filter((job) => job.salary.min >= salaryRange[0] && job.salary.min <= salaryRange[1]).length} jobs
-                </span>
-              </div>
-
-              {/* Salary Chart */}
-              <div className="p-4 bg-white border border-green-200 rounded-xl shadow-sm">
-                <div className="flex items-end justify-between h-40 gap-1.5">
-                  {salaryDistribution.map((item, index) => {
-                    const isInRange =
-                      item.salary >= salaryRange[0] &&
-                      item.salary <= salaryRange[1];
-                    const heightPercent = (item.count / maxCount) * 100;
-
-                    return (
-                      <div
-                        key={index}
-                        className="flex-1 flex flex-col items-center group relative"
-                      >
-                        <div
-                          className={`w-full rounded-t-lg transition-all duration-200 shadow-sm ${
-                            isInRange
-                              ? "bg-gradient-to-t from-emerald-500 via-emerald-400 to-emerald-300 hover:from-emerald-600 hover:via-emerald-500 hover:to-emerald-400 shadow-md"
-                              : "bg-gradient-to-t from-gray-300 to-gray-200 hover:from-gray-400 hover:to-gray-300"
-                          }`}
-                          style={{ height: `${heightPercent}%` }}
-                        />
-                        {/* Tooltip */}
-                        <div className="absolute -top-12 left-1/2 -translate-x-1/2 px-3 py-2 bg-gray-900 text-white text-xs rounded-lg opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap pointer-events-none z-20 shadow-lg">
-                          <div className="font-semibold">${item.salary.toLocaleString()}</div>
-                          <div className="text-gray-300">{item.count} job{item.count !== 1 ? 's' : ''}</div>
-                        </div>
-                      </div>
-                    );
-                  })}
+            <div className="px-5 pb-8 space-y-6">
+              <div className="flex justify-between items-center gap-4">
+                <div className="flex-1">
+                  <label className="text-[10px] font-black text-slate-400 uppercase mb-1 block">Od</label>
+                  <div className="bg-slate-50 border border-slate-200 rounded-lg p-2 text-sm font-black text-slate-700">
+                    {salaryRange[0].toLocaleString()} zł
+                  </div>
                 </div>
-                <div className="flex justify-between text-xs text-gray-500 mt-3 px-1">
-                  <span className="font-medium">$2K</span>
-                  <span className="font-medium">$8K</span>
-                  <span className="font-medium">$14K</span>
+                <div className="flex-1">
+                  <label className="text-[10px] font-black text-slate-400 uppercase mb-1 block">Do</label>
+                  <div className="bg-slate-50 border border-slate-200 rounded-lg p-2 text-sm font-black text-slate-700">
+                    {salaryRange[1].toLocaleString()} zł
+                  </div>
                 </div>
               </div>
 
