@@ -891,7 +891,7 @@ export default function Home() {
         </div>
       )}
 
-      <div>{currentPage === "doctors" && <DoctorsAppointments />}</div>
+      {/* <div>{currentPage === "doctors" && <DoctorsAppointments />}</div> */}
 
       {currentPage === "interview" && (
         <div className="p-8 animate-in fade-in duration-500 w-full max-w-none">
