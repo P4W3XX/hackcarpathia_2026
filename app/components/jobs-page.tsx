@@ -109,13 +109,13 @@ export const JobsPage: React.FC = () => {
               <h2 className="text-2xl font-bold text-gray-900">
                 Available Positions
               </h2>
-              <span className="bg-blue-100 text-blue-700 px-4 py-2 rounded-full font-semibold">
+              <span className=" text-gray-400 px-4 py-2 text-md font-normal">
                 {filteredJobs.length} results
               </span>
             </div>
 
             {filteredJobs.length > 0 ? (
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+              <div className="flex flex-wrap gap-x-3 gap-y-6 items-center jujstify-center w-full">
                 {filteredJobs.map((job) => (
                   <JobCard key={job.id} job={job} />
                 ))}
