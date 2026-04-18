@@ -16,6 +16,7 @@ import {
 import { useUserStore } from "@/store/user";
 import { createClient } from "@/lib/supabase/client";
 
+const TAX_FACTOR = 0.79;
 const LIFESTYLES: Record<string, number> = {
   "Student (Przetrwanie)": 0.6,
   "Normalny człowiek": 1.0,
@@ -28,7 +29,10 @@ export default function JobFinderSalaryDashboard() {
 
   const [isMounted, setIsMounted] = useState(false);
   const [cityData, setCityData] = useState<any[]>([]);
-  const [netSalary, setNetSalary] = useState(0);
+
+  const [salaryInput, setSalaryInput] = useState<number>(0);
+  const [salaryType, setSalaryType] = useState<"brutto" | "netto">("netto");
+
   const [city, setCity] = useState("Warszawa");
   const [housing, setHousing] = useState("rentStudio");
   const [lifestyle, setLifestyle] = useState("Normalny człowiek");
@@ -68,7 +72,11 @@ export default function JobFinderSalaryDashboard() {
           name: profile.full_name,
           salary: profile.salary,
         });
-        setNetSalary(profile.salary || 0);
+
+        const initialGross = profile.salary || 0;
+        setSalaryInput(Math.round(initialGross * TAX_FACTOR));
+        setSalaryType("netto");
+
         setCity(profile.city_name || "Warszawa");
         setHousing(profile.housing_type || "rentStudio");
         setLifestyle(profile.lifestyle_type || "Normalny człowiek");
@@ -86,6 +94,19 @@ export default function JobFinderSalaryDashboard() {
 
     if (isMounted) initData();
   }, [isMounted, supabase, setUser]);
+
+  const syncSalaryToDb = async (value: number, type: "brutto" | "netto") => {
+    if (!user) return;
+    const grossValue =
+      type === "brutto" ? value : Math.round(value / TAX_FACTOR);
+
+    const { error } = await supabase
+      .from("profiles")
+      .update({ salary: grossValue })
+      .eq("id", user.id);
+
+    if (error) console.error("DB Error:", error.message);
+  };
 
   const updateProfile = async (updates: any) => {
     if (!user) return;
@@ -106,7 +127,6 @@ export default function JobFinderSalaryDashboard() {
       ])
       .select()
       .single();
-
     if (!error) {
       setGoals([data, ...goals]);
       setSelectedGoalId(data.id);
@@ -120,10 +140,9 @@ export default function JobFinderSalaryDashboard() {
     e.stopPropagation();
     const { error } = await supabase.from("goals").delete().eq("id", goalId);
     if (!error) {
-      setGoals(goals.filter((g) => g.id !== goalId));
-      if (selectedGoalId === goalId) {
-        setSelectedGoalId(goals.find((g) => g.id !== goalId)?.id || "");
-      }
+      const updated = goals.filter((g) => g.id !== goalId);
+      setGoals(updated);
+      if (selectedGoalId === goalId) setSelectedGoalId(updated[0]?.id || "");
     }
   };
 
@@ -132,12 +151,17 @@ export default function JobFinderSalaryDashboard() {
       cityData.find((c) => c.city_name === city) || cityData[0];
     if (!currentCity) return null;
 
+    const currentNetto =
+      salaryType === "netto" ? salaryInput : salaryInput * TAX_FACTOR;
+    const currentBrutto =
+      salaryType === "brutto" ? salaryInput : salaryInput / TAX_FACTOR;
+
     const rent = Number(currentCity[housing]) || 0;
     const foodAndLife =
       (Number(currentCity.food_base) || 0) * (LIFESTYLES[lifestyle] || 1);
     const transport = Number(currentCity.transport_cost) || 0;
     const totalCosts = rent + foodAndLife + transport;
-    const balance = netSalary - totalCosts;
+    const balance = currentNetto - totalCosts;
 
     const selectedGoal = goals.find((g) => g.id === selectedGoalId);
     const monthsToGoal =
@@ -152,8 +176,19 @@ export default function JobFinderSalaryDashboard() {
       balance,
       monthsToGoal,
       selectedGoal,
+      currentBrutto,
+      currentNetto,
     };
-  }, [netSalary, city, housing, lifestyle, goals, selectedGoalId, cityData]);
+  }, [
+    salaryInput,
+    salaryType,
+    city,
+    housing,
+    lifestyle,
+    goals,
+    selectedGoalId,
+    cityData,
+  ]);
 
   if (!isMounted || !calculation) return null;
 
@@ -218,25 +253,44 @@ export default function JobFinderSalaryDashboard() {
           <div className="lg:col-span-2 bg-white p-6 rounded-[24px] shadow-sm border border-slate-100">
             <h2 className="font-semibold flex items-center gap-2 mb-6">
               <Wallet className="text-indigo-500" size={20} /> Twoja Pensja
-              Netto
             </h2>
-            <div className="flex items-baseline gap-2">
+
+            <div className="flex items-center bg-slate-50 rounded-2xl p-2 border border-slate-100 focus-within:ring-2 focus-within:ring-indigo-500/20 transition-all">
               <input
                 type="number"
-                value={netSalary}
-                onChange={(e) => setNetSalary(Number(e.target.value))}
-                className="text-5xl font-black text-slate-800 focus:outline-none w-full bg-transparent"
+                value={salaryInput}
+                onChange={(e) => {
+                  const val = Number(e.target.value);
+                  setSalaryInput(val);
+                  syncSalaryToDb(val, salaryType);
+                }}
+                className="text-4xl font-black text-slate-800 focus:outline-none w-full bg-transparent px-4"
               />
-              <span className="text-xl font-bold text-slate-400">PLN</span>
+              <div className="bg-white border border-slate-200 rounded-xl px-4 py-2 font-bold text-indigo-600 shadow-sm">
+                NETTO
+              </div>
+            </div>
+
+            <div className="flex gap-6 mt-6 px-2">
+              <div className="flex flex-col">
+                <span className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">
+                  Szacowane Brutto
+                </span>
+                <span className="font-bold text-slate-600">
+                  {Math.round(calculation.currentBrutto)} zł
+                </span>
+              </div>
             </div>
           </div>
 
           <div
             className={`p-6 rounded-[24px] shadow-sm border ${calculation.balance > 0 ? "bg-indigo-600 text-white" : "bg-red-500 text-white"}`}
           >
-            <h2 className="font-medium opacity-80 mb-1">Zostaje na czysto</h2>
+            <h2 className="font-medium opacity-80 mb-1">
+              Zostaje na czysto (Netto)
+            </h2>
             <div className="text-4xl font-black mb-4">
-              {calculation.balance.toFixed(0)} zł
+              {Math.round(calculation.balance)} zł
             </div>
             <p className="text-sm opacity-90 font-medium">
               {calculation.balance > 0
