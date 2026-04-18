@@ -1,3 +1,4 @@
+/* eslint-disable @next/next/no-img-element */
 /* eslint-disable @typescript-eslint/no-explicit-any */
 "use client";
 
@@ -93,7 +94,7 @@ export const JobCard: React.FC<JobCardProps> = ({ job }) => {
 
           {/* Title and Company */}
           <div className="flex justify-between items-start gap-4 mb-4">
-            <div className="flex flex-col flex-1">
+            <div className="flex flex-col flex-1">  
               <h3 className="text-xl font-black text-slate-900 leading-tight group-hover:text-blue-600 transition-colors">
                 {job.title}
               </h3>
@@ -102,8 +103,8 @@ export const JobCard: React.FC<JobCardProps> = ({ job }) => {
               </p>
             </div>
             <div className="bg-white p-2 rounded-2xl shadow-sm">
-              <Image
-                src={job.logo_url || "/default-logo.png"}
+              <img
+                src={job.logo_url || "/default-offer-photo.png"}
                 alt={`${job.company} logo`}
                 width={40}
                 height={40}
