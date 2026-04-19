@@ -13,7 +13,8 @@ interface MenuProps {
       | "home"
       | "taxes"
       | "doctors"
-      | "interview",
+      | "interview"
+      | "laundry",
   ) => void;
   isExpanded: boolean;
   onToggleMenu: () => void;
@@ -34,6 +35,7 @@ import {
   Newspaper,
   Stethoscope,
   ClipboardClock,
+  WashingMachine,
 } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { cn } from "@/lib/utils";
@@ -115,6 +117,13 @@ export const Menu: React.FC<MenuProps> = ({
       icon: ClipboardClock,
       description: "Przeprowadź testową rozmowę o pracę",
       page: "interview" as const,
+    },
+    {
+      id: "laundry",
+      label: "Poradnik prania",
+      icon: WashingMachine,
+      description: "Sprawdź jak wyprać twoje ubrania",
+      page: "laundry" as const,
     }
   ];
 
@@ -138,7 +147,7 @@ export const Menu: React.FC<MenuProps> = ({
             <div className="flex size-9 items-center justify-center rounded-lg bg-primary text-primary-foreground">
               <Sparkles className="size-5" />
             </div>
-            <h1 className="text-lg font-bold tracking-tight">JobFinder</h1>
+            <h1 className="text-lg font-bold tracking-tight">Adultify</h1>
           </div>
         )}
         <Button

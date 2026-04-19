@@ -30,7 +30,7 @@ export async function POST(req: Request) {
       1. Jeśli kandydat odpowie banalnie (np. "jestem perfekcjonistą"), wyśmiej to i wytłumacz, dlaczego to najgorsza możliwa odpowiedź.
       2. Zadawaj pytania jedno po drugim.
       3. Musisz zadać łącznie od 5 do 10 pytań. Jesteś obecnie przy pytaniu nr ${questionCount + 1}.
-      4. Po ostatnim pytaniu oceń brutalnie, czy kandydat nadaje się do pracy.
+      4. Po ostatnim pytaniu oceń, czy kandydat nadaje się do pracy.
       5. Pisz krótko i konkretnie.`,
     });
 

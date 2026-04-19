@@ -62,7 +62,6 @@ export const ContractAnalyzer = () => {
 
   return (
     <div className="max-w-4xl mx-auto p-4 sm:p-6 pb-20">
-      {/* Karta Uploadu */}
       <div className="bg-white rounded-[32px] p-6 sm:p-10 shadow-sm border border-slate-100 mb-8">
         <div className="flex flex-col sm:flex-row items-center gap-5 mb-10 text-center sm:text-left">
           <div className="p-5 bg-blue-600 rounded-[24px] text-white shadow-lg shadow-blue-100">

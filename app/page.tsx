@@ -22,6 +22,7 @@ import { ContractAnalyzer } from "@/components/contract-analyzer";
 import { CvCreator } from "@/components/cv-creator";
 import { DoctorsAppointments } from "@/components/doctors-appointments";
 import { InterviewSimulator } from "@/components/interview-simulator";
+import { LaundryAssistant } from "@/components/laundry-assistant";
 
 // Static user progress data
 const userProgress: UserProgress = {
@@ -73,6 +74,7 @@ export default function Home() {
     | "contract-analyzer"
     | "cv-creator"
     | "interview"
+    | "laundry"
   >("salary-calculator");
 
   const [isMenuExpanded, setIsMenuExpanded] = useState(true);
@@ -223,7 +225,7 @@ export default function Home() {
 
         {currentPage === "contract-analyzer" && (
           <div className="animate-in fade-in duration-500">
-            <div className="text-center mb-12">
+            <div className="text-center mb-12 mt-5">
               <h1 className="text-4xl font-black text-slate-900 mb-4">
                 Audyt Prawny AI
               </h1>
@@ -903,7 +905,18 @@ export default function Home() {
               Spróbuj odpowiedzieć tak, żeby otrzymać posadę.
             </p>
           </div>
-          <div className="w-full max-w-none"><InterviewSimulator /></div>
+          <div className="w-full max-w-none">
+            <InterviewSimulator />
+          </div>
+        </div>
+      )}
+
+      {currentPage === "laundry" && (
+        <div className="p-8 animate-in zoom-in-95 duration-500 w-full max-w-none">
+          <h1 className="text-4xl font-black text-white text-center mb-8 italic uppercase tracking-tighter">
+            Mistrz Prania
+          </h1>
+          <LaundryAssistant />
         </div>
       )}
     </main>
