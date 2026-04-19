@@ -1,3 +1,4 @@
+/* eslint-disable @next/next/no-img-element */
 "use client";
 
 import React, { useState } from "react";
@@ -124,7 +125,7 @@ export const Menu: React.FC<MenuProps> = ({
       icon: WashingMachine,
       description: "Sprawdź jak wyprać twoje ubrania",
       page: "laundry" as const,
-    }
+    },
   ];
 
   const handleMenuItemClick = (item: (typeof menuItems)[0]) => {
@@ -144,8 +145,12 @@ export const Menu: React.FC<MenuProps> = ({
       <div className="flex items-center justify-between p-4 border-b border-sidebar-border h-18">
         {isExpanded && (
           <div className="flex items-center gap-2">
-            <div className="flex size-9 items-center justify-center rounded-lg bg-primary text-primary-foreground">
-              <Sparkles className="size-5" />
+            <div className="flex size-9 items-center justify-center rounded-lg  text-primary-foreground">
+              <img
+                src="/adultify.png"
+                alt="adultify logo"
+                className="w-full h-full"
+              />
             </div>
             <h1 className="text-lg font-bold tracking-tight">Adultify</h1>
           </div>
