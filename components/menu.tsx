@@ -147,7 +147,7 @@ export const Menu: React.FC<MenuProps> = ({
             <div className="flex size-9 items-center justify-center rounded-lg bg-primary text-primary-foreground">
               <Sparkles className="size-5" />
             </div>
-            <h1 className="text-lg font-bold tracking-tight">JobFinder</h1>
+            <h1 className="text-lg font-bold tracking-tight">Adultify</h1>
           </div>
         )}
         <Button

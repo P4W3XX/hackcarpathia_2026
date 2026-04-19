@@ -134,3 +134,67 @@ export async function logoutAction() {
 
   redirect("/login")
 }
+
+export async function deleteAccountAction() {
+  const supabase = await createClient()
+  const supabaseAdmin = createAdminClient()
+
+  const { data: { user }, error: userError } = await supabase.auth.getUser()
+
+  if (userError || !user) {
+    return { error: "Nie znaleziono użytkownika." }
+  }
+
+  await supabase
+    .from('profiles')
+    .delete()
+    .eq('session_id', user.id)
+
+  await supabase
+    .from("profiles")
+    .delete()
+    .eq("id", user.id)
+
+  const { error: deleteError } = await supabaseAdmin.auth.admin.deleteUser(user.id)
+
+  if (deleteError) {
+    return { error: "Błąd podczas usuwania konta: " + deleteError.message }
+  }
+
+  await supabase.auth.signOut()
+  redirect("/register")
+}
+
+export async function updateProfileAction(data: {
+  name?: string
+  salary?: number
+  city_name?: string
+}) {
+  const supabase = await createClient()
+  const { setUser, ...store } = useUserStore.getState()
+
+  const { data: { user }, error: userError } = await supabase.auth.getUser()
+  if (userError || !user) return { error: "Nieautoryzowany." }
+
+  const { error: dbError } = await supabase
+    .from("profiles")
+    .update({
+      full_name: data.name,
+      salary: data.salary,
+      city_name: data.city_name,
+      updated_at: new Date().toISOString(),
+    })
+    .eq("id", user.id)
+
+  if (dbError) return { error: dbError.message }
+
+  setUser({
+    id: user.id,
+    email: user.email!,
+    name: data.name ?? user.user_metadata.full_name,
+    salary: data.salary ?? 0,
+    city_name: data.city_name ?? "",    
+  })
+
+  return { success: true }
+}
