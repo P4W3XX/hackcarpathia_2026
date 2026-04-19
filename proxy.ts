@@ -24,15 +24,23 @@ export async function proxy(request: NextRequest) {
   const { data: { user } } = await supabase.auth.getUser()
   const { pathname } = request.nextUrl
 
+  // Ścieżki auth dla niezalogowanych
+  const authPaths = ["/login", "/register", "/reset-password", "/forgot-password","/landing"]
+
   // Ścieżki publiczne
-  const publicPaths = ["/login", "/register", "/reset-password", "/forgot-password", "/api/auth/callback"]
+  const publicPaths = [...authPaths, "/api/auth/callback"]
   const isPublicPath = publicPaths.some(path => pathname.startsWith(path))
-  const isHomePage = pathname === "/"
+  const isAuthPath = authPaths.some(path => pathname.startsWith(path))
 
   // Niezalogowany
   if (!user) {
     if (isPublicPath) return supabaseResponse
-    return NextResponse.redirect(new URL("/login", request.url))
+    return NextResponse.redirect(new URL("/landing", request.url))
+  }
+
+  // Zalogowany nie powinien trafiać na strony logowania/rejestracji/resetu
+  if (isAuthPath) {
+    return NextResponse.redirect(new URL("/", request.url))
   }
 
   return supabaseResponse
