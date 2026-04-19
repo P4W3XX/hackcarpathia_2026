@@ -18,9 +18,9 @@ import { createClient } from "@/lib/supabase/client";
 
 const TAX_FACTOR = 0.79;
 const LIFESTYLES: Record<string, number> = {
-  "Student (Przetrwanie)": 0.6,
-  "Normalny człowiek": 1.0,
-  "Żymianin ✡️ (Premium)": 1.8,
+  Student: 0.6,
+  "Osoba dorosla": 1.0,
+  Emeryt: 1.8,
 };
 
 export default function JobFinderSalaryDashboard() {
