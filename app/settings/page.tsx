@@ -16,8 +16,14 @@ import { Controller, useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import * as z from "zod";
 import { useState } from "react";
-import { Loader2, LogOut, Trash2 } from "lucide-react";
-import { updateProfileAction, deleteAccountAction, logoutAction } from "@/actions/auth-action";
+import { ChevronLeft, Loader2, LogOut, Trash2 } from "lucide-react";
+import {
+  updateProfileAction,
+  deleteAccountAction,
+  logoutAction,
+} from "@/actions/auth-action";
+
+import { useRouter } from "next/navigation";
 
 const profileSchema = z.object({
   name: z.string().min(2, "Name must be at least 2 characters"),
@@ -28,6 +34,7 @@ export default function SettingsPage() {
   const [serverError, setServerError] = useState<string | null>(null);
   const [successMessage, setSuccessMessage] = useState<string | null>(null);
   const [isDeleting, setIsDeleting] = useState(false);
+  const router = useRouter();
 
   const form = useForm<z.infer<typeof profileSchema>>({
     resolver: zodResolver(profileSchema),
@@ -51,7 +58,11 @@ export default function SettingsPage() {
   };
 
   const handleDeleteAccount = async () => {
-    if (confirm("Are you sure you want to delete your account? This action cannot be undone.")) {
+    if (
+      confirm(
+        "Are you sure you want to delete your account? This action cannot be undone.",
+      )
+    ) {
       setIsDeleting(true);
       await deleteAccountAction();
       setIsDeleting(false);
@@ -60,16 +71,31 @@ export default function SettingsPage() {
 
   return (
     <div className="container max-w-4xl py-10 mx-auto px-4">
-      <div className="mb-8">
-        <h1 className="text-3xl font-bold tracking-tight">Ustawienia profilu</h1>
-        <p className="text-muted-foreground">Zarządzaj swoimi danymi i ustawieniami.</p>
+      <div className="mb-8 flex items-center justify-between">
+        <div>
+          <h1 className="text-3xl font-bold tracking-tight">
+            Ustawienia profilu
+          </h1>
+          <p className="text-muted-foreground">
+            Zarządzaj swoimi danymi i ustawieniami.
+          </p>
+        </div>
+        <button
+          onClick={() => router.back()}
+          className=" flex items-center font-semibold text-primary hover:text-primary/80"
+        >
+          <ChevronLeft className="mr-2 h-4 w-4" />
+          <p>Powrót</p>
+        </button>
       </div>
 
       <div className="grid gap-8">
         <Card>
           <CardHeader>
             <CardTitle>Informacje o profilu</CardTitle>
-            <CardDescription>Uaktualnij swoje imię i nazwisko oraz adres e-mail.</CardDescription>
+            <CardDescription>
+              Uaktualnij swoje imię i nazwisko oraz adres e-mail.
+            </CardDescription>
           </CardHeader>
           <CardContent>
             {serverError && (
@@ -90,10 +116,18 @@ export default function SettingsPage() {
                   control={form.control}
                   render={({ field, fieldState }) => (
                     <Field className="gap-1" data-invalid={fieldState.invalid}>
-                      <FieldLabel className="text-[15px]">Imie i nazwisko</FieldLabel>
-                      <Input {...field} placeholder="Twoje imię i nazwisko" type="text"/>
+                      <FieldLabel className="text-[15px]">
+                        Imie i nazwisko
+                      </FieldLabel>
+                      <Input
+                        {...field}
+                        placeholder="Twoje imię i nazwisko"
+                        type="text"
+                      />
                       {fieldState.error && (
-                        <p className="text-sm text-destructive">{fieldState.error.message}</p>
+                        <p className="text-sm text-destructive">
+                          {fieldState.error.message}
+                        </p>
                       )}
                     </Field>
                   )}
@@ -104,10 +138,18 @@ export default function SettingsPage() {
                   control={form.control}
                   render={({ field, fieldState }) => (
                     <Field className="gap-1" data-invalid={fieldState.invalid}>
-                      <FieldLabel className="text-[15px]">Adres e-mail</FieldLabel>
-                      <Input {...field} placeholder="email@example.com" type="email" />
+                      <FieldLabel className="text-[15px]">
+                        Adres e-mail
+                      </FieldLabel>
+                      <Input
+                        {...field}
+                        placeholder="email@example.com"
+                        type="email"
+                      />
                       {fieldState.error && (
-                        <p className="text-sm text-destructive">{fieldState.error.message}</p>
+                        <p className="text-sm text-destructive">
+                          {fieldState.error.message}
+                        </p>
                       )}
                     </Field>
                   )}
@@ -117,21 +159,29 @@ export default function SettingsPage() {
           </CardContent>
           <CardFooter className="border-t bg-muted/50 py-4 flex justify-end">
             <Button type="submit" form="profile-form" disabled={isSubmitting}>
-              {isSubmitting && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+              {isSubmitting && (
+                <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+              )}
               Zapisz zmiany
             </Button>
           </CardFooter>
         </Card>
         <Card className="border-destructive/20">
           <CardHeader>
-            <CardTitle className="text-destructive">Strefa administratora</CardTitle>
-            <CardDescription>Możliwe niodwracalne zmiany dla twojego profilu.</CardDescription>
+            <CardTitle className="text-destructive">
+              Strefa administratora
+            </CardTitle>
+            <CardDescription>
+              Możliwe niodwracalne zmiany dla twojego profilu.
+            </CardDescription>
           </CardHeader>
           <CardContent className="space-y-4">
             <div className="flex items-center justify-between">
               <div>
                 <p className="font-medium">Wyloguj</p>
-                <p className="text-sm text-muted-foreground">Wyloguj się ze swojego konta.</p>
+                <p className="text-sm text-muted-foreground">
+                  Wyloguj się ze swojego konta.
+                </p>
               </div>
               <Button variant="outline" onClick={() => logoutAction()}>
                 <LogOut className="mr-2 h-4 w-4" />
@@ -142,14 +192,20 @@ export default function SettingsPage() {
             <div className="flex items-center justify-between">
               <div>
                 <p className="font-medium text-destructive">Usuń konto</p>
-                <p className="text-sm text-muted-foreground">Usuń swoje konto i swoje dane na stałe.</p>
+                <p className="text-sm text-muted-foreground">
+                  Usuń swoje konto i swoje dane na stałe.
+                </p>
               </div>
-              <Button 
-                variant="destructive" 
+              <Button
+                variant="destructive"
                 onClick={handleDeleteAccount}
                 disabled={isDeleting}
               >
-                {isDeleting ? <Loader2 className="h-4 w-4 animate-spin" /> : <Trash2 className="h-4 w-4" />}
+                {isDeleting ? (
+                  <Loader2 className="h-4 w-4 animate-spin" />
+                ) : (
+                  <Trash2 className="h-4 w-4" />
+                )}
                 <span className="ml-2">Usuń konto</span>
               </Button>
             </div>
