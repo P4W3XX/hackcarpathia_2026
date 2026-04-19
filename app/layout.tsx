@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 import { Geist, Geist_Mono, Inter } from "next/font/google";
 import "./globals.css";
 import { cn } from "@/lib/utils";
-import { ToastProvider } from "@/components/toast-provider";
+import { Toaster } from "@/components/ui/sonner"
 
 const inter = Inter({subsets:['latin'],variable:'--font-sans'});
 
@@ -17,8 +17,55 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "JobFinder — Znajdź pracę, rozwijaj karierę",
-  description: "Porównuj oferty pracy, planuj awans i analizuj swoje finanse.",
+  metadataBase: new URL("https://hackcarpathia-2026.vercel.app/"),
+  title: {
+    default: "Adultify | Czas dorastania i pierwsza praca",
+    template: "%s | Adultify",
+  },
+  description:
+    "Adultify pomaga nastolatkom ogarnąć dorastanie: pierwsza praca, pierwsze CV, pierwsza wypłata i codzienne dorosłe decyzje.",
+  applicationName: "Adultify",
+  keywords: [
+    "dorastanie",
+    "nastoletniość",
+    "pierwsza praca",
+    "pierwsze CV",
+    "kalkulator wypłaty",
+    "audyt umowy",
+    "AI",
+    "Adultify",
+  ],
+  openGraph: {
+    type: "website",
+    locale: "pl_PL",
+    siteName: "Adultify",
+    title: "Adultify | Czas dorastania i pierwsza praca",
+    description:
+      "Jedna aplikacja na czas dorastania: praca, finanse, umowy i codzienne sprawy z pomocą AI.",
+    url: "/",
+    images: [
+      {
+        url: "/adultify.png",
+        width: 1200,
+        height: 1200,
+        alt: "Logo Adultify",
+      },
+    ],
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: "Adultify | Czas dorastania i pierwsza praca",
+    description:
+      "Wsparcie AI dla nastolatków: pierwsza praca, CV, umowy i dorosłe decyzje bez presji.",
+    images: ["/adultify.png"],
+  },
+  robots: {
+    index: true,
+    follow: true,
+  },
+  alternates: {
+    canonical: "/",
+  },
 };
 
 export default function RootLayout({
@@ -38,9 +85,9 @@ export default function RootLayout({
       )}
     >
       <body className="min-h-full flex flex-col">
-        <ToastProvider>
-          {children}
-        </ToastProvider>
+<main>{children}</main>
+        <Toaster/>
+          
       </body>
     </html>
   );

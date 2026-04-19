@@ -2,6 +2,7 @@
 "use client";
 
 import React, { useState } from "react";
+import Image from "next/image";
 
 interface MenuProps {
   onNavigate?: (
@@ -146,10 +147,12 @@ export const Menu: React.FC<MenuProps> = ({
         {isExpanded && (
           <div className="flex items-center gap-2">
             <div className="flex size-9 items-center justify-center rounded-lg  text-primary-foreground">
-              <img
+              <Image
                 src="/adultify.png"
                 alt="adultify logo"
-                className="w-full h-full"
+                className=" size-6"
+                width={100}
+                height={100}
               />
             </div>
             <h1 className="text-lg font-bold tracking-tight">Adultify</h1>

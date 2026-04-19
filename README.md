@@ -1,36 +1,80 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# Adultify
 
-## Getting Started
+Adultify to aplikacja webowa wspierająca nastolatków i młode osoby w pierwszych krokach dorosłego życia: od szukania pracy, przez pierwsze CV i rozmowy rekrutacyjne, po podatki, umowy i codzienne decyzje.
 
-First, run the development server:
+## Najważniejsze funkcje
+
+- porównywanie ofert pracy i benefitów,
+- kalkulator wynagrodzenia,
+- AI do planowania ścieżki kariery,
+- analiza umów i formularzy,
+- generator CV i PDF,
+- symulator rozmowy kwalifikacyjnej,
+- asystent do odczytywania metek i instrukcji prania,
+- sekcja z terminami podatkowymi i podstawami PIT, CIT oraz VAT,
+- moduł wizyt lekarskich,
+- logowanie, rejestracja, reset hasła i ustawienia konta.
+
+## Stack
+
+- Next.js 16
+- React 19
+- TypeScript
+- Tailwind CSS 4
+- Supabase
+- Google Gemini API
+- shadcn/ui, Radix UI, Lucide, Sonner, Motion
+
+## Uruchomienie lokalne
 
 ```bash
+npm install
 npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+Po starcie aplikacja będzie dostępna pod adresem [http://localhost:3000](http://localhost:3000).
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+## Skrypty
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+- `npm run dev` - uruchamia serwer developerski,
+- `npm run build` - buduje produkcyjną wersję aplikacji,
+- `npm run start` - uruchamia zbudowaną aplikację,
+- `npm run lint` - odpala ESLint.
 
-## Learn More
+## Wymagane zmienne środowiskowe
 
-To learn more about Next.js, take a look at the following resources:
+Utwórz plik `.env.local` i uzupełnij:
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+```dotenv
+NEXT_PUBLIC_SUPABASE_URL=
+NEXT_PUBLIC_SUPABASE_ANON_KEY=
+SUPABASE_SERVICE_ROLE_KEY=
+GEMINI_API_KEY=
+```
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+## Struktura projektu
 
-## Deploy on Vercel
+- `app/` - strony, layout, API routes i widoki aplikacji,
+- `components/` - komponenty UI i moduły funkcjonalne,
+- `lib/` - helpery i konfiguracja klienta,
+- `actions/` - akcje serwerowe,
+- `schema/` - schematy walidacji,
+- `store/` - stan aplikacji,
+- `public/` - zasoby statyczne.
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+## API
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+Aplikacja zawiera m.in. endpointy do:
+
+- analizy umów,
+- generowania kariery,
+- generowania CV,
+- generowania PDF,
+- pobierania danych użytkownika,
+- symulatora interview,
+- obsługi modułu laundry,
+- callbacka autoryzacji.
+
+## Uwagi
+
+Projekt jest przygotowany pod środowisko Vercel i korzysta z App Routera. Główny ekran aplikacji znajduje się w [app/page.tsx](app/page.tsx), a globalne metadata i konfiguracja layoutu w [app/layout.tsx](app/layout.tsx).
