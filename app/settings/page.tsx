@@ -84,7 +84,7 @@ export default function SettingsPage() {
           onClick={() => router.back()}
           className=" flex items-center font-semibold text-primary hover:text-primary/80"
         >
-          <ChevronLeft className="mr-2 h-4 w-4" />
+          <ChevronLeft className="mr-1 h-4 w-4" />
           <p>Powrót</p>
         </button>
       </div>
